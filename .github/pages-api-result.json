@@ -1,0 +1,11 @@
+{
+  "repository": "purple-spider513/Before11",
+  "visibility": "private",
+  "attempts": [
+    {
+      "method": "POST",
+      "http_status": "403",
+      "body": "{\n  \"message\": \"Resource not accessible by integration\",\n  \"documentation_url\": \"https://docs.github.com/rest/pages/pages#create-a-apiname-pages-site\",\n  \"status\": \"403\"\n}"
+    }
+  ]
+}
