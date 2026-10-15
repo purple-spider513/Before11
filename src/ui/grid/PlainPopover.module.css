@@ -1,0 +1,107 @@
+.pop {
+  position: fixed;
+  z-index: 50;
+  width: 272px;
+  padding: 12px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-float);
+  box-shadow: var(--float-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.label {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+
+.swatches { display: flex; gap: 4px; }
+
+.swatch,
+.on {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-control);
+}
+
+.on { box-shadow: 0 0 0 2px var(--bg-raised), 0 0 0 4px var(--text-on-fill); }
+
+.fields {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fields:disabled { opacity: 0.45; }
+
+.list {
+  max-height: 132px;
+  overflow: auto;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--bg-control);
+}
+
+.choice,
+.choiceOn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: left;
+}
+
+.choice:hover { background: var(--hover); }
+.choiceOn { background: var(--accent-soft); }
+
+.choice i,
+.choiceOn i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.choice span,
+.choiceOn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty {
+  margin: 0;
+  padding: 6px 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hint {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-3);
+}
