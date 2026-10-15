@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { groupUnfinished, noTime, plannedMinutes, rowDateText } from './list.ts'
+import { dateFieldLabel, groupUnfinished, noTime, plannedMinutes, rowDateText, workKindLabel } from './list.ts'
 import type { Course, PaletteKey, Session, WorkItem } from './types.ts'
 
 const today = '2026-09-24'
@@ -71,6 +71,29 @@ describe('groupUnfinished', () => {
     expect(rowDateText(item({ id: 'x', title: 'Final', date: '2027-01-08', courseId: 'math', kind: 'exam' }), today)).toBe(
       'Exam · Fri, Jan 8, 2027',
     )
+    expect(rowDateText(item({ id: 't', title: 'Email teacher', date: today, courseId: null, kind: 'task' }), today)).toBe(
+      'Task · Today',
+    )
+    expect(dateFieldLabel('task')).toBe('Due')
+    expect(dateFieldLabel('exam')).toBe('Test date')
+    expect(workKindLabel('task')).toBe('Task')
+  })
+
+  it('sorts a task with homework and exams by due date', () => {
+    const groups = groupUnfinished(
+      [
+        item({ id: 'hw', title: 'Worksheet', date: '2026-09-26', courseId: 'math' }),
+        item({ id: 'tk', title: 'Email teacher', date: '2026-09-25', courseId: null, kind: 'task' }),
+        item({ id: 'ex', title: 'Quiz', date: '2026-09-25', courseId: 'bio', kind: 'exam' }),
+        item({ id: 'later-task', title: 'Return the book', date: '2026-10-03', courseId: null, kind: 'task' }),
+      ],
+      courses,
+      today,
+    )
+    expect(groups.tomorrow.map((i) => i.id)).toEqual(['tk', 'ex'])
+    expect(groups.tomorrow[0].courseId).toBeNull()
+    expect(groups.later.map((i) => i.id)).toEqual(['hw', 'later-task'])
+    expect(rowDateText(groups.tomorrow[0], today)).toBe('Task · Tomorrow')
   })
 })
 

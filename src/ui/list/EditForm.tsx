@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { dateFieldLabel, workKindLabel } from '../../model/list.ts'
 import { courseSwatches, swatch } from '../../model/palette.ts'
-import type { Course, PaletteKey } from '../../model/types.ts'
+import { courseById, WORK_KINDS, type Course, type PaletteKey, type WorkKind } from '../../model/types.ts'
 import {
   closeEditor,
   deleteWorkItem,
@@ -16,11 +17,11 @@ import styles from './EditForm.module.css'
 
 export function EditForm({ id }: { id: string }) {
   const item = useStore((s) => s.workItems[id])
-  const course = useStore((s) => (item ? s.courses[item.courseId] : undefined))
+  const course = useStore((s) => courseById(s.courses, item?.courseId))
   const formRef = useRef<HTMLFormElement>(null)
   const courseRef = useRef<HTMLInputElement>(null)
   const handleRef = useRef<CourseFieldHandle>(null)
-  const [kind, setKind] = useState(item?.kind ?? 'homework')
+  const [kind, setKind] = useState<WorkKind>(item?.kind ?? 'homework')
   const [courseText, setCourseText] = useState(course?.name ?? '')
   const [title, setTitle] = useState(item?.title ?? '')
   const [date, setDate] = useState(item?.date ?? '')
@@ -52,20 +53,27 @@ export function EditForm({ id }: { id: string }) {
     }
   }
 
+  function pickKind(next: WorkKind) {
+    setKind(next)
+    if (next === 'task') setHint((current) => (current === 'course' ? null : current))
+  }
+
   function onSubmit(e: FormEvent) {
     e.preventDefault()
-    const resolved = handleRef.current?.resolve()
     let picked: Course | null = null
     let createName: string | null = null
-    if (!resolved || resolved.kind === 'empty') {
-      setHint('course')
-      courseRef.current?.focus()
-      return
-    }
-    if (resolved.kind === 'course') picked = resolved.course
-    else {
-      picked = findCourseByName(resolved.name)
-      createName = picked ? null : resolved.name
+    if (kind !== 'task') {
+      const resolved = handleRef.current?.resolve()
+      if (!resolved || resolved.kind === 'empty') {
+        setHint('course')
+        courseRef.current?.focus()
+        return
+      }
+      if (resolved.kind === 'course') picked = resolved.course
+      else {
+        picked = findCourseByName(resolved.name)
+        createName = picked ? null : resolved.name
+      }
     }
     if (!trimTitle(title)) {
       setHint('title')
@@ -81,32 +89,33 @@ export function EditForm({ id }: { id: string }) {
       color,
       estimate: parseEstimate(estimate),
     })
-    if (!ok) setHint('course')
+    if (!ok) setHint(kind === 'task' ? 'title' : 'course')
   }
 
   return (
     <form ref={formRef} className={styles.form} onSubmit={onSubmit} onKeyDown={onKeyDown}>
-      <div className="seg" role="group" aria-label="Kind">
-        <button type="button" aria-pressed={kind === 'homework'} onClick={() => setKind('homework')}>
-          Homework
-        </button>
-        <button type="button" aria-pressed={kind === 'exam'} onClick={() => setKind('exam')}>
-          Exam
-        </button>
+      <div className="seg kinds" role="group" aria-label="Kind">
+        {WORK_KINDS.map((id) => (
+          <button key={id} type="button" aria-pressed={kind === id} onClick={() => pickKind(id)}>
+            {workKindLabel(id)}
+          </button>
+        ))}
       </div>
-      <CourseField
-        value={courseText}
-        onChange={(value) => {
-          setCourseText(value)
-          const found = findCourseByName(value)
-          if (found) setColor(found.color)
-          setHint(null)
-        }}
-        inputRef={courseRef}
-        handleRef={handleRef}
-        invalid={hint === 'course'}
-      />
-      {hint === 'course' ? <p className={styles.hint}>Pick or type a course</p> : null}
+      {kind === 'task' ? null : (
+        <CourseField
+          value={courseText}
+          onChange={(value) => {
+            setCourseText(value)
+            const found = findCourseByName(value)
+            if (found) setColor(found.color)
+            setHint(null)
+          }}
+          inputRef={courseRef}
+          handleRef={handleRef}
+          invalid={hint === 'course'}
+        />
+      )}
+      {kind !== 'task' && hint === 'course' ? <p className={styles.hint}>Pick or type a course</p> : null}
       <input
         className={hint === 'title' ? 'field invalid' : 'field'}
         aria-label="Title"
@@ -118,7 +127,7 @@ export function EditForm({ id }: { id: string }) {
       />
       {hint === 'title' ? <p className={styles.hint}>Add a title</p> : null}
       <label className={styles.dateLabel}>
-        {kind === 'exam' ? 'Test date' : 'Due'}
+        {dateFieldLabel(kind)}
         <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       </label>
       <label className={styles.estimate}>
@@ -138,21 +147,23 @@ export function EditForm({ id }: { id: string }) {
           <span className={styles.min}>minutes</span>
         </span>
       </label>
-      <div className={styles.colors} role="group" aria-label="Course color">
-        {courseSwatches().map((entry) => (
-          <button
-            key={entry.key}
-            type="button"
-            aria-label={entry.name}
-            aria-pressed={color === entry.key}
-            className={color === entry.key ? styles.swatchOn : styles.swatch}
-            style={{ background: swatch(entry.key).fill }}
-            onClick={() => {
-              if (entry.key !== 'slate') setColor(entry.key)
-            }}
-          />
-        ))}
-      </div>
+      {kind === 'task' ? null : (
+        <div className={styles.colors} role="group" aria-label="Course color">
+          {courseSwatches().map((entry) => (
+            <button
+              key={entry.key}
+              type="button"
+              aria-label={entry.name}
+              aria-pressed={color === entry.key}
+              className={color === entry.key ? styles.swatchOn : styles.swatch}
+              style={{ background: swatch(entry.key).fill }}
+              onClick={() => {
+                if (entry.key !== 'slate') setColor(entry.key)
+              }}
+            />
+          ))}
+        </div>
+      )}
       <div className={styles.row}>
         <button className="btn btn-primary" type="submit">
           Save

@@ -13,15 +13,19 @@ create table public.courses (
 create table public.work_items (
   id                uuid primary key,
   user_id           uuid not null default auth.uid() references auth.users (id) on delete cascade,
-  course_id         uuid not null,
-  kind              text not null check (kind in ('homework', 'exam')),
+  course_id         uuid,
+  kind              text not null check (kind in ('homework', 'exam', 'task')),
   title             text not null,
   date              text not null check (date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'),
   completed_at      text check (completed_at is null or completed_at ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'),
   estimate_minutes  integer,
   created_at        bigint not null,
   updated_at        bigint not null,
-  updated_by        text not null
+  updated_by        text not null,
+  constraint work_items_course_kind_check check (
+    (kind = 'task' and course_id is null)
+    or (kind in ('homework', 'exam') and course_id is not null)
+  )
 );
 
 create table public.sessions (
@@ -90,3 +94,45 @@ grant select, insert, update, delete
 
 alter publication supabase_realtime
   add table public.courses, public.work_items, public.sessions, public.profiles, public.probe_lines;
+
+-- The statements above create a new database. The live project was created when
+-- kind was only homework|exam and course_id was not null. Run this once in the
+-- SQL editor so a task (no course) can sync. Do not run schema.sql again.
+--
+-- begin;
+--
+-- do $$
+-- declare
+--   r record;
+-- begin
+--   for r in
+--     select con.conname
+--     from pg_constraint con
+--     join pg_class rel on rel.oid = con.conrelid
+--     join pg_namespace nsp on nsp.oid = rel.relnamespace
+--     where nsp.nspname = 'public'
+--       and rel.relname = 'work_items'
+--       and con.contype = 'c'
+--       and pg_get_constraintdef(con.oid) ilike '%kind%'
+--       and pg_get_constraintdef(con.oid) not ilike '%task%'
+--   loop
+--     execute format('alter table public.work_items drop constraint %I', r.conname);
+--   end loop;
+-- end $$;
+--
+-- alter table public.work_items drop constraint if exists work_items_kind_check;
+-- alter table public.work_items
+--   add constraint work_items_kind_check
+--   check (kind in ('homework', 'exam', 'task'));
+--
+-- alter table public.work_items alter column course_id drop not null;
+--
+-- alter table public.work_items drop constraint if exists work_items_course_kind_check;
+-- alter table public.work_items
+--   add constraint work_items_course_kind_check
+--   check (
+--     (kind = 'task' and course_id is null)
+--     or (kind in ('homework', 'exam') and course_id is not null)
+--   );
+--
+-- commit;

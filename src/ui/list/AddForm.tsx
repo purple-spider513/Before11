@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { addDays } from '../../model/dates.ts'
-import type { Course } from '../../model/types.ts'
+import { dateFieldLabel, workKindLabel } from '../../model/list.ts'
+import { WORK_KINDS, type Course, type WorkKind } from '../../model/types.ts'
 import { closeAdd, findCourseByName, focusReturnAdd, submitAdd, trimTitle } from '../../store/actions.ts'
 import { loadLastCourseId } from '../../store/device.ts'
 import { useStore } from '../../store/store.ts'
@@ -12,7 +13,7 @@ export function AddForm() {
   const courses = useStore((s) => s.courses)
   const last = loadLastCourseId()
   const initial = last ? courses[last] : undefined
-  const [kind, setKind] = useState<'homework' | 'exam'>('homework')
+  const [kind, setKind] = useState<WorkKind>('homework')
   const [courseText, setCourseText] = useState(initial?.name ?? '')
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(() => addDays(today, 1))
@@ -59,20 +60,30 @@ export function AddForm() {
     }
   }
 
+  function pickKind(next: WorkKind) {
+    setKind(next)
+    if (next === 'task') {
+      setHint((current) => (current === 'course' ? null : current))
+      titleRef.current?.focus()
+    }
+  }
+
   function onSubmit(e: FormEvent) {
     e.preventDefault()
-    const resolved = handleRef.current?.resolve()
     let course: Course | null = null
     let createName: string | null = null
-    if (!resolved || resolved.kind === 'empty') {
-      setHint('course')
-      courseRef.current?.focus()
-      return
-    }
-    if (resolved.kind === 'course') course = resolved.course
-    else {
-      course = findCourseByName(resolved.name)
-      createName = course ? null : resolved.name
+    if (kind !== 'task') {
+      const resolved = handleRef.current?.resolve()
+      if (!resolved || resolved.kind === 'empty') {
+        setHint('course')
+        courseRef.current?.focus()
+        return
+      }
+      if (resolved.kind === 'course') course = resolved.course
+      else {
+        course = findCourseByName(resolved.name)
+        createName = course ? null : resolved.name
+      }
     }
     if (!trimTitle(title)) {
       setHint('title')
@@ -88,29 +99,30 @@ export function AddForm() {
       ref={formRef}
       className={styles.form}
       role="dialog"
-      aria-label="Add homework or exam"
+      aria-label="Add homework, exam, or task"
       onSubmit={onSubmit}
       onKeyDown={onKeyDown}
     >
-      <div className="seg" role="group" aria-label="Kind">
-        <button type="button" aria-pressed={kind === 'homework'} onClick={() => setKind('homework')}>
-          Homework
-        </button>
-        <button type="button" aria-pressed={kind === 'exam'} onClick={() => setKind('exam')}>
-          Exam
-        </button>
+      <div className="seg kinds" role="group" aria-label="Kind">
+        {WORK_KINDS.map((id) => (
+          <button key={id} type="button" aria-pressed={kind === id} onClick={() => pickKind(id)}>
+            {workKindLabel(id)}
+          </button>
+        ))}
       </div>
-      <CourseField
-        value={courseText}
-        onChange={(value) => {
-          setCourseText(value)
-          setHint(null)
-        }}
-        inputRef={courseRef}
-        handleRef={handleRef}
-        invalid={hint === 'course'}
-      />
-      {hint === 'course' ? <p className={styles.hint}>Pick or type a course</p> : null}
+      {kind === 'task' ? null : (
+        <CourseField
+          value={courseText}
+          onChange={(value) => {
+            setCourseText(value)
+            setHint(null)
+          }}
+          inputRef={courseRef}
+          handleRef={handleRef}
+          invalid={hint === 'course'}
+        />
+      )}
+      {kind !== 'task' && hint === 'course' ? <p className={styles.hint}>Pick or type a course</p> : null}
       <input
         ref={titleRef}
         className={hint === 'title' ? 'field invalid' : 'field'}
@@ -124,7 +136,7 @@ export function AddForm() {
       />
       {hint === 'title' ? <p className={styles.hint}>Add a title</p> : null}
       <label className={styles.dateLabel}>
-        {kind === 'exam' ? 'Test date' : 'Due'}
+        {dateFieldLabel(kind)}
         <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       </label>
       <div className={styles.row}>
