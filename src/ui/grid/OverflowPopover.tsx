@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { formatRange } from '../../model/minutes.ts'
 import { swatch } from '../../model/palette.ts'
+import { courseById } from '../../model/types.ts'
 import { closePopover, selectSession, sessionLabel } from '../../store/actions.ts'
 import { useStore } from '../../store/store.ts'
 import styles from './OverflowPopover.module.css'
@@ -55,7 +56,7 @@ export function OverflowPopover({ date, ids }: { date: string; ids: string[] }) 
 function OverflowRow({ id, date, itemId }: { id: string; date: string; itemId: string | null }) {
   const session = useStore((s) => s.sessions[id])
   const item = useStore((s) => (itemId ? s.workItems[itemId] : undefined))
-  const course = useStore((s) => (item ? s.courses[item.courseId] : undefined))
+  const course = useStore((s) => courseById(s.courses, item?.courseId))
   if (!session) return null
   const paint = swatch(course?.color ?? session.color ?? 'slate')
   const range = session.start != null && session.end != null ? formatRange(session.start, session.end) : ''

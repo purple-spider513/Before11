@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { withCourse } from '../model/list.ts'
+import { courseById } from '../model/types.ts'
 import { deviceTz } from '../store/device.ts'
 import { useStore } from '../store/store.ts'
 import styles from './StatusSlot.module.css'
@@ -31,14 +33,14 @@ export function StatusSlot() {
   let text = ''
   let kind: 'armed' | 'plain' = 'plain'
   if (armed?.kind === 'workItem' && work && 'courseId' in work) {
-    const course = useStore.getState().courses[work.courseId]
+    const course = courseById(useStore.getState().courses, work.courseId)
     const place = view === 'month' ? 'date' : 'hour'
-    text = `Click ${place === 'date' ? 'a date' : 'an hour'} to place ${course?.name ?? ''} · ${work.title}. Esc cancels.`
+    text = `Click ${place === 'date' ? 'a date' : 'an hour'} to place ${withCourse(course?.name, work.title)}. Esc cancels.`
     kind = 'armed'
   } else if (armed?.kind === 'chip' && work && 'workItemId' in work && work.workItemId) {
     const item = useStore.getState().workItems[work.workItemId]
-    const course = item ? useStore.getState().courses[item.courseId] : undefined
-    text = `Click an hour to set a time for ${course?.name ?? ''} · ${item?.title ?? ''}. Esc cancels.`
+    const course = courseById(useStore.getState().courses, item?.courseId)
+    text = `Click an hour to set a time for ${withCourse(course?.name, item?.title ?? '')}. Esc cancels.`
     kind = 'armed'
   } else if (firstClick) {
     text = 'Click again to set the end. Esc cancels.'

@@ -1,4 +1,4 @@
-import type { BlockColor, Course, PaletteKey, Profile, Session, WorkItem } from '../model/types.ts'
+import { WORK_KINDS, type BlockColor, type Course, type PaletteKey, type Profile, type Session, type WorkItem, type WorkKind } from '../model/types.ts'
 
 export type Table = 'courses' | 'work_items' | 'sessions' | 'profiles'
 
@@ -29,7 +29,7 @@ export function workItemToDb(item: WorkItem, userId: string): Record<string, unk
   return {
     id: item.id,
     user_id: userId,
-    course_id: item.courseId,
+    course_id: item.kind === 'task' ? null : item.courseId,
     kind: item.kind,
     title: item.title,
     date: item.date,
@@ -41,11 +41,17 @@ export function workItemToDb(item: WorkItem, userId: string): Record<string, unk
   }
 }
 
+function workKindFromDb(value: unknown): WorkKind {
+  return WORK_KINDS.includes(value as WorkKind) ? (value as WorkKind) : 'homework'
+}
+
 export function workItemFromDb(row: Record<string, unknown>): WorkItem {
+  const kind = workKindFromDb(row.kind)
+  const courseId = row.course_id == null || row.course_id === '' ? null : String(row.course_id)
   return {
     id: String(row.id),
-    courseId: String(row.course_id),
-    kind: row.kind === 'exam' ? 'exam' : 'homework',
+    courseId: kind === 'task' ? null : courseId,
+    kind,
     title: String(row.title),
     date: String(row.date),
     completedAt: row.completed_at == null ? null : String(row.completed_at),

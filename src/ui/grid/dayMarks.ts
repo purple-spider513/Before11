@@ -1,7 +1,8 @@
 import { monthTimedLabel } from './labels.ts'
 import { segmentsForDate } from '../../model/instances.ts'
+import { withCourse } from '../../model/list.ts'
 import { swatch } from '../../model/palette.ts'
-import type { Course, DateStr, Session, WorkItem } from '../../model/types.ts'
+import { courseById, type Course, type DateStr, type Session, type WorkItem } from '../../model/types.ts'
 
 export interface Mark {
   id: string
@@ -29,7 +30,7 @@ export function dayMarks(
   const exams = Object.values(workItems)
     .filter((item) => item.kind === 'exam' && item.date === date)
     .map((item) => {
-      const course = courses[item.courseId]
+      const course = courseById(courses, item.courseId)
       const courseName = course?.name ?? ''
       const paint = swatch(course?.color ?? 'violet')
       return {
@@ -50,15 +51,16 @@ export function dayMarks(
     .filter((session) => session.workItemId && session.start == null && session.date === date)
     .map((session) => {
       const item = session.workItemId ? workItems[session.workItemId] : undefined
-      const course = item ? courses[item.courseId] : undefined
+      const course = courseById(courses, item?.courseId)
       const courseName = course?.name ?? ''
       const title = item?.title ?? ''
-      const paint = swatch(course?.color ?? 'violet')
+      const paint = swatch(course?.color ?? (item?.kind === 'task' ? 'slate' : 'violet'))
+      const label = withCourse(courseName || undefined, title)
       return {
         id: session.id,
         kind: 'chip' as const,
-        label: `${courseName} · ${title}`,
-        tip: `${courseName} · ${title}`,
+        label,
+        tip: label,
         fill: paint.fill,
         outline: paint.text,
         workItemId: item?.id ?? null,
@@ -100,7 +102,7 @@ export function monthChips(
       if (!session) return null
       if (!session.workItemId && session.repeat !== 'none') return null
       const item = session.workItemId ? workItems[session.workItemId] : undefined
-      const course = item ? courses[item.courseId] : undefined
+      const course = courseById(courses, item?.courseId)
       const title = item?.title ?? session.title ?? 'Busy'
       const paint = swatch(course?.color ?? session.color ?? 'slate')
       const courseName = course?.name ?? null

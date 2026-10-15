@@ -1,5 +1,5 @@
 import { addDays, dayOf, monthShort, weekdayShort, yearOf } from './dates.ts'
-import type { Course, DateStr, Session, WorkItem } from './types.ts'
+import { courseById, type Course, type DateStr, type Session, type WorkItem, type WorkKind } from './types.ts'
 
 export interface Groups {
   overdue: WorkItem[]
@@ -8,8 +8,13 @@ export interface Groups {
   later: WorkItem[]
 }
 
-function courseName(courses: Readonly<Record<string, Course>>, id: string): string {
-  return courses[id]?.name ?? ''
+function courseName(courses: Readonly<Record<string, Course>>, id: string | null): string {
+  return courseById(courses, id)?.name ?? ''
+}
+
+/** "Course · title" when there is a course, otherwise the title alone. */
+export function withCourse(courseName: string | undefined, title: string): string {
+  return courseName ? `${courseName} · ${title}` : title
 }
 
 function byCourseTitle(
@@ -103,9 +108,42 @@ export function tomorrowCount(items: readonly WorkItem[], today: DateStr): numbe
   return n
 }
 
-/** Date text on a row, including the exam prefix. Overdue includes " · overdue". */
+export function workKindLabel(kind: WorkKind): string {
+  switch (kind) {
+    case 'homework':
+      return 'Homework'
+    case 'exam':
+      return 'Exam'
+    case 'task':
+      return 'Task'
+  }
+}
+
+/** Label above the date field. Tasks use the same due date as homework. */
+export function dateFieldLabel(kind: WorkKind): string {
+  switch (kind) {
+    case 'exam':
+      return 'Test date'
+    case 'homework':
+    case 'task':
+      return 'Due'
+  }
+}
+
+function kindPrefix(kind: WorkKind): string {
+  switch (kind) {
+    case 'exam':
+      return 'Exam · '
+    case 'task':
+      return 'Task · '
+    case 'homework':
+      return ''
+  }
+}
+
+/** Date text on a row. Exams and tasks carry a kind prefix. Overdue includes " · overdue". */
 export function rowDateText(item: WorkItem, today: DateStr): string {
-  const prefix = item.kind === 'exam' ? 'Exam · ' : ''
+  const prefix = kindPrefix(item.kind)
   if (item.date < today) {
     return `${prefix}${weekdayShort(item.date)}, ${monthShort(item.date)} ${dayOf(item.date)} · overdue`
   }
