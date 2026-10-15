@@ -1,0 +1,15 @@
+.gutter {
+  position: relative;
+  flex: none;
+  height: 1536px;
+}
+
+.hour {
+  position: absolute;
+  right: 8px;
+  transform: translateY(-50%);
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-3);
+  white-space: nowrap;
+}

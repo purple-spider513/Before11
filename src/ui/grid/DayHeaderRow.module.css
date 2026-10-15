@@ -1,0 +1,37 @@
+.row {
+  height: var(--dayhead-h);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-grid);
+  z-index: 10;
+}
+
+.gutter { width: var(--gutter-w); flex: none; }
+
+.cell {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+}
+
+.num {
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.name { color: var(--text-2); }
+
+.today {
+  display: inline-block;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  line-height: 20px;
+}

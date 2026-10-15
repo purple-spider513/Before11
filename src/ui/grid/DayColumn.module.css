@@ -1,0 +1,21 @@
+.col {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 1536px;
+  border-left: 1px solid var(--line);
+  background-image: linear-gradient(to bottom, var(--line) 0, var(--line) 1px, transparent 1px);
+  background-size: 100% 64px;
+}
+
+.copy { cursor: copy; }
+
+.marker {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+  z-index: 5;
+  pointer-events: none;
+}
