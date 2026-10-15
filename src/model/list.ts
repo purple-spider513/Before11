@@ -6,6 +6,25 @@ export interface Groups {
   tonight: WorkItem[]
   tomorrow: WorkItem[]
   later: WorkItem[]
+  /** Unfinished items with no date. Rendered after every dated group. */
+  undated: WorkItem[]
+}
+
+/** Dated items sort first. A missing date sorts after every real date. */
+export function compareDueDate(a: DateStr | null, b: DateStr | null): number {
+  if (a == null && b == null) return 0
+  if (a == null) return 1
+  if (b == null) return -1
+  if (a === b) return 0
+  return a < b ? -1 : 1
+}
+
+/** Saved courses whose names contain the query, case-insensitive, sorted by name. */
+export function matchingCourses(courses: readonly Course[], query: string): Course[] {
+  const typed = query.trim().toLowerCase()
+  return courses
+    .filter((course) => course.name.toLowerCase().includes(typed))
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
 }
 
 function courseName(courses: Readonly<Record<string, Course>>, id: string | null): string {
@@ -33,7 +52,8 @@ function byDateCourseTitle(
   courses: Readonly<Record<string, Course>>,
 ): (a: WorkItem, b: WorkItem) => number {
   return (a, b) => {
-    if (a.date !== b.date) return a.date < b.date ? -1 : 1
+    const date = compareDueDate(a.date, b.date)
+    if (date !== 0) return date
     return byCourseTitle(courses)(a, b)
   }
 }
@@ -47,9 +67,14 @@ export function groupUnfinished(
   const tonight: WorkItem[] = []
   const tomorrow: WorkItem[] = []
   const later: WorkItem[] = []
+  const undated: WorkItem[] = []
   const next = addDays(today, 1)
   for (const item of items) {
     if (item.completedAt !== null) continue
+    if (item.date == null) {
+      undated.push(item)
+      continue
+    }
     if (item.date < today) overdue.push(item)
     else if (item.date === today) tonight.push(item)
     else if (item.date === next) tomorrow.push(item)
@@ -59,7 +84,8 @@ export function groupUnfinished(
   tonight.sort(byCourseTitle(courses))
   tomorrow.sort(byCourseTitle(courses))
   later.sort(byDateCourseTitle(courses))
-  return { overdue, tonight, tomorrow, later }
+  undated.sort(byCourseTitle(courses))
+  return { overdue, tonight, tomorrow, later, undated }
 }
 
 export function sessionCounts(session: Session, today: DateStr, now: number): boolean {
@@ -119,7 +145,7 @@ export function workKindLabel(kind: WorkKind): string {
   }
 }
 
-/** Label above the date field. Tasks use the same due date as homework. */
+/** Label above the date field. A task may leave it blank. */
 export function dateFieldLabel(kind: WorkKind): string {
   switch (kind) {
     case 'exam':
@@ -144,6 +170,7 @@ function kindPrefix(kind: WorkKind): string {
 /** Date text on a row. Exams and tasks carry a kind prefix. Overdue includes " · overdue". */
 export function rowDateText(item: WorkItem, today: DateStr): string {
   const prefix = kindPrefix(item.kind)
+  if (item.date == null) return `${prefix}No date`
   if (item.date < today) {
     return `${prefix}${weekdayShort(item.date)}, ${monthShort(item.date)} ${dayOf(item.date)} · overdue`
   }
