@@ -25,14 +25,14 @@ export function UnfinishedList() {
   return (
     <div className={styles.col}>
       <button id="b11-add" type="button" className={`btn ${styles.add}`} aria-haspopup="dialog" onClick={() => openAdd()}>
-        Add homework or exam
+        Add homework, exam, or task
       </button>
       {addOpen ? <AddForm /> : null}
       {loaded && unfinished === 0 ? (
         <p className={styles.empty}>
           {courseCount === 0
-            ? "Add a course and the first homework or exam that's due. It stays on this list until you check it off."
-            : 'Nothing due. Add homework when you get it.'}
+            ? "Add a task, or a course and the first homework or exam that's due. It stays on this list until you check it off."
+            : 'Nothing due. Add homework or a task when you get it.'}
         </p>
       ) : null}
       {loaded || unfinished > 0

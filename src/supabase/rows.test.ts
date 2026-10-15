@@ -45,6 +45,11 @@ describe('rows', () => {
     expect(courseToDb(course, 'user').user_id).toBe('user')
     expect(workItemFromDb(workItemToDb(item, 'user'))).toEqual(item)
     expect(workItemToDb(item, 'user').completed_at).toBeNull()
+    const task: WorkItem = { ...item, id: 'w2', kind: 'task', courseId: null, title: 'Email teacher', estimateMinutes: null }
+    expect(workItemToDb(task, 'user').course_id).toBeNull()
+    expect(workItemFromDb(workItemToDb(task, 'user'))).toEqual(task)
+    expect(workItemFromDb({ ...workItemToDb(item, 'user'), kind: 'task', course_id: 'c1' }).courseId).toBeNull()
+    expect(workItemFromDb({ ...workItemToDb(item, 'user'), kind: 'note' }).kind).toBe('homework')
     expect(sessionFromDb(sessionToDb(session, 'user'))).toEqual(session)
     expect(sessionToDb(session, 'user').start_min).toBe(960)
     expect(sessionToDb(session, 'user').end_min).toBe(1020)

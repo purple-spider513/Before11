@@ -112,4 +112,9 @@ button {
   color: var(--text-on-fill);
 }
 
+.seg.kinds button {
+  padding: 0 2px;
+  white-space: nowrap;
+}
+
 .nums { font-variant-numeric: tabular-nums; }

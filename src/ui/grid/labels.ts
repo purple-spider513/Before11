@@ -23,6 +23,16 @@ export function linkedParts(input: {
   const lines = lineCount(input.heightPx)
   const range = formatRange(input.start, input.end)
   const stacked = lines >= 2 && (input.view === 'day' || input.widthPx >= 110)
+  if (!input.course) {
+    if (stacked) {
+      const out: LabelPart[][] = [[{ text: input.title, weight: 600 }]]
+      if (lines >= 3) out.push([{ text: range, weight: 400 }])
+      return out
+    }
+    const parts: LabelPart[] = [{ text: input.title, weight: 600 }]
+    if (input.forceTime) parts.push({ text: ` ${formatTime(input.start)}`, weight: 400 })
+    return [parts]
+  }
   if (stacked) {
     const out: LabelPart[][] = [
       [{ text: input.course, weight: 600 }],

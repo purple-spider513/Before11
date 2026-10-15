@@ -1,13 +1,13 @@
 import { noTime, plannedMinutes, rowDateText } from '../../model/list.ts'
 import { swatch } from '../../model/palette.ts'
-import type { PaletteKey, WorkItem } from '../../model/types.ts'
+import { courseById, type WorkItem } from '../../model/types.ts'
 import { completeWorkItem } from '../../store/actions.ts'
 import { useStore } from '../../store/store.ts'
 import { downList } from '../grid/gesture/controller.ts'
 import styles from './ListRow.module.css'
 
 export function ListRow({ item }: { item: WorkItem }) {
-  const course = useStore((s) => s.courses[item.courseId])
+  const course = useStore((s) => courseById(s.courses, item.courseId))
   const sessions = useStore((s) => s.sessions)
   const today = useStore((s) => s.today)
   const now = useStore((s) => s.nowMinute)
@@ -36,10 +36,14 @@ export function ListRow({ item }: { item: WorkItem }) {
         <div className={styles.title}>{item.title}</div>
         <div className={styles.meta}>
           <div className={styles.left}>
-            <span className={styles.course} style={{ color: swatch((course?.color ?? 'violet') as PaletteKey).text }}>
-              {course?.name ?? ''}
-            </span>
-            <span> · </span>
+            {course ? (
+              <>
+                <span className={styles.course} style={{ color: swatch(course.color).text }}>
+                  {course.name}
+                </span>
+                <span> · </span>
+              </>
+            ) : null}
             <span className={item.date < today ? styles.overdue : undefined}>{dateText}</span>
           </div>
           <div className={styles.right}>
