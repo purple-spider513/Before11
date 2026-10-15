@@ -16,15 +16,19 @@ create table public.work_items (
   course_id         uuid,
   kind              text not null check (kind in ('homework', 'exam', 'task')),
   title             text not null,
-  date              text not null check (date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'),
+  date              text check (date is null or date ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'),
   completed_at      text check (completed_at is null or completed_at ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'),
   estimate_minutes  integer,
+  importance        text check (importance is null or importance in ('low', 'high')),
   created_at        bigint not null,
   updated_at        bigint not null,
   updated_by        text not null,
   constraint work_items_course_kind_check check (
     (kind = 'task' and course_id is null)
     or (kind in ('homework', 'exam') and course_id is not null)
+  ),
+  constraint work_items_date_kind_check check (
+    kind = 'task' or date is not null
   )
 );
 
@@ -134,5 +138,31 @@ alter publication supabase_realtime
 --     (kind = 'task' and course_id is null)
 --     or (kind in ('homework', 'exam') and course_id is not null)
 --   );
+--
+-- commit;
+--
+-- A task may have no date, and every work item may set importance.
+-- The live date column is still NOT NULL, and importance does not exist yet.
+-- Run this once in the SQL editor. Until it runs, the app keeps those edits
+-- on this computer. After it runs, the queued rows sync.
+--
+-- begin;
+--
+-- alter table public.work_items alter column date drop not null;
+--
+-- alter table public.work_items drop constraint if exists work_items_date_kind_check;
+--
+-- alter table public.work_items
+--   add constraint work_items_date_kind_check
+--   check (kind = 'task' or date is not null);
+--
+-- alter table public.work_items
+--   add column if not exists importance text;
+--
+-- alter table public.work_items drop constraint if exists work_items_importance_check;
+--
+-- alter table public.work_items
+--   add constraint work_items_importance_check
+--   check (importance is null or importance in ('low', 'high'));
 --
 -- commit;

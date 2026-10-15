@@ -1,36 +1,44 @@
 import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { addDays } from '../../model/dates.ts'
-import { dateFieldLabel, workKindLabel } from '../../model/list.ts'
-import { WORK_KINDS, type Course, type WorkKind } from '../../model/types.ts'
-import { closeAdd, findCourseByName, focusReturnAdd, submitAdd, trimTitle } from '../../store/actions.ts'
+import { workKindLabel } from '../../model/list.ts'
+import { WORK_KINDS, type Course, type Importance, type WorkKind } from '../../model/types.ts'
+import { closeAdd, focusReturnAdd, parseEstimate, submitAdd, trimTitle } from '../../store/actions.ts'
 import { loadLastCourseId } from '../../store/device.ts'
 import { useStore } from '../../store/store.ts'
 import { CourseField, type CourseFieldHandle } from './CourseField.tsx'
+import { DueField, DurationField, ImportanceField } from './WorkFields.tsx'
 import styles from './AddForm.module.css'
 
 export function AddForm() {
   const today = useStore((s) => s.today)
   const courses = useStore((s) => s.courses)
+  const courseCount = Object.keys(courses).length
   const last = loadLastCourseId()
   const initial = last ? courses[last] : undefined
   const [kind, setKind] = useState<WorkKind>('homework')
   const [courseText, setCourseText] = useState(initial?.name ?? '')
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(() => addDays(today, 1))
-  const [hint, setHint] = useState<'course' | 'title' | null>(null)
+  const [estimate, setEstimate] = useState('')
+  const [importance, setImportance] = useState<Importance | null>(null)
+  const [hint, setHint] = useState<'course' | 'title' | 'date' | null>(null)
   const courseRef = useRef<HTMLInputElement>(null)
   const titleRef = useRef<HTMLInputElement>(null)
+  const dateRef = useRef<HTMLInputElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const handleRef = useRef<CourseFieldHandle>(null)
 
   useLayoutEffect(() => {
-    if (initial) titleRef.current?.focus()
+    const hasCourse = Object.keys(useStore.getState().courses).length > 0
+    if (initial || !hasCourse) titleRef.current?.focus()
     else courseRef.current?.focus()
     const onDown = (e: PointerEvent) => {
-      if (!formRef.current?.contains(e.target as Node)) {
-        closeAdd()
-        focusReturnAdd()
-      }
+      const target = e.target
+      if (!(target instanceof Node)) return
+      if (formRef.current?.contains(target)) return
+      if (document.getElementById('b11-courses-root')?.contains(target)) return
+      closeAdd()
+      focusReturnAdd()
     }
     window.addEventListener('pointerdown', onDown)
     return () => window.removeEventListener('pointerdown', onDown)
@@ -71,7 +79,6 @@ export function AddForm() {
   function onSubmit(e: FormEvent) {
     e.preventDefault()
     let course: Course | null = null
-    let createName: string | null = null
     if (kind !== 'task') {
       const resolved = handleRef.current?.resolve()
       if (!resolved || resolved.kind === 'empty') {
@@ -79,18 +86,26 @@ export function AddForm() {
         courseRef.current?.focus()
         return
       }
-      if (resolved.kind === 'course') course = resolved.course
-      else {
-        course = findCourseByName(resolved.name)
-        createName = course ? null : resolved.name
-      }
+      course = resolved.course
     }
     if (!trimTitle(title)) {
       setHint('title')
       titleRef.current?.focus()
       return
     }
-    submitAdd({ kind, title, date, course, createName })
+    if (kind !== 'task' && !date) {
+      setHint('date')
+      dateRef.current?.focus()
+      return
+    }
+    submitAdd({
+      kind,
+      title,
+      date: date || null,
+      course,
+      estimate: kind === 'exam' ? null : parseEstimate(estimate),
+      importance,
+    })
     focusReturnAdd()
   }
 
@@ -119,10 +134,12 @@ export function AddForm() {
           }}
           inputRef={courseRef}
           handleRef={handleRef}
-          invalid={hint === 'course'}
+          invalid={hint === 'course' && courseCount > 0}
         />
       )}
-      {kind !== 'task' && hint === 'course' ? <p className={styles.hint}>Pick or type a course</p> : null}
+      {kind !== 'task' && hint === 'course' && courseCount > 0 ? (
+        <p className={styles.hint}>Pick a course</p>
+      ) : null}
       <input
         ref={titleRef}
         className={hint === 'title' ? 'field invalid' : 'field'}
@@ -135,10 +152,20 @@ export function AddForm() {
         }}
       />
       {hint === 'title' ? <p className={styles.hint}>Add a title</p> : null}
-      <label className={styles.dateLabel}>
-        {dateFieldLabel(kind)}
-        <input className="field" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-      </label>
+      <DueField
+        kind={kind}
+        value={date}
+        inputRef={dateRef}
+        onChange={(value) => {
+          setDate(value)
+          setHint(null)
+        }}
+      />
+      {hint === 'date' ? (
+        <p className={styles.hint}>{kind === 'exam' ? 'Add a test date' : 'Add a due date'}</p>
+      ) : null}
+      {kind === 'exam' ? null : <DurationField value={estimate} onChange={setEstimate} />}
+      <ImportanceField value={importance} onChange={setImportance} />
       <div className={styles.row}>
         <button className="btn btn-primary" type="submit">
           Add

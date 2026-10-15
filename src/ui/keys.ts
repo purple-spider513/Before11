@@ -5,6 +5,7 @@ import {
   clearFirstClick,
   clearSelection,
   closeAdd,
+  closeCourses,
   closeEditor,
   closeMonth,
   closePopover,
@@ -48,6 +49,11 @@ function escapeLayers(): void {
   }
   if (state.armed) {
     disarm()
+    return
+  }
+  if (state.coursesOpen) {
+    closeCourses()
+    document.getElementById('b11-courses')?.focus()
     return
   }
   if (state.addOpen) {

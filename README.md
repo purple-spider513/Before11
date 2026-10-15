@@ -59,8 +59,8 @@ Do not press Refresh while the Wi-Fi is off. There is no service worker, so Chro
 - `OWNER_EMAIL` is empty. When it is set, the probe email field and the app sign-in email field start with that address.
 - `#probe` is the probe. Any other hash, including empty, is the app.
 - The signed-in user is a field on the zustand store so the list and calendar can render from it on the first frame.
-- An estimate that is not a multiple of 5 is rounded to the nearest 5, then clamped to 5–1440. An empty estimate is stored as null.
-- In the course field, an exact case-insensitive match is the highlighted row. Otherwise the Create row is highlighted when the typed name is non-empty.
+- An estimate that is not a multiple of 5 is rounded to the nearest 5, then clamped to 5–1440. An empty estimate is stored as null. Homework and tasks ask for it on add and edit, labeled How long. Exams do not.
+- Courses are added from the Courses menu in the header. The next course takes the next palette color. Homework and exam forms do not create a course. Their course field lists saved courses and filters as you type. A choice is required. With no courses, the form says to add one in the Courses menu.
 - Done dates in block tooltips use `Mon D`, and add the year when it is not the current year.
 - Scrollbar color `#3A3A44` and the `+N` pill `rgba(0,0,0,0.35)` are `--scrollbar` and `--pill` in `tokens.css`. Components only use variables.
 - `supabase/schema.sql` commits the owner uid. The live database was already applied; this file was not run again.
@@ -72,4 +72,6 @@ Do not press Refresh while the Wi-Fi is off. There is no service worker, so Chro
 - The probe starts signed in on frame 0 when `b11.auth` in `localStorage` holds a user.
 - Realtime channel names carry a counter. `supabase.channel(name)` returns the existing channel of that name until its async removal finishes, and React StrictMode subscribes twice in dev.
 - The Vite scaffold's oxlint package and `@types/node` are not installed. They are outside the allowed dependency list.
-- A task has kind `task`, a title, and a date, and no course. Homework and exams still require one. `supabase/schema.sql` allows that. The live database still needs the SQL comment at the bottom of that file before a task can sync.
+- A task has no course. Homework and exams still require one. A task's date can be empty; homework and exams cannot. An undated task stays in the unfinished list after dated items. Checking it off or dragging it onto the calendar works the same way, and dragging does not complete it.
+- Homework, exams, and tasks have an optional importance: unset, low, or high. It is stored and not used for sorting.
+- `supabase/schema.sql` matches that. The live database still needs the second SQL comment at the bottom of that file before an undated task or an importance can sync. Until then, those edits stay on this computer.

@@ -1,7 +1,17 @@
 import { nextCourseColor } from '../model/courseColor.ts'
 import { clamp, snap5 } from '../model/minutes.ts'
 import { stepAnchor } from '../model/range.ts'
-import { courseById, type BlockColor, type Course, type DateStr, type Session, type View, type WorkItem, type WorkKind } from '../model/types.ts'
+import {
+  courseById,
+  type BlockColor,
+  type Course,
+  type DateStr,
+  type Importance,
+  type Session,
+  type View,
+  type WorkItem,
+  type WorkKind,
+} from '../model/types.ts'
 import { withCourse } from '../model/list.ts'
 import { courseToDb, sessionToDb, workItemToDb } from '../supabase/rows.ts'
 import { enqueueWrite, scheduleWrite } from '../supabase/write.ts'
@@ -118,6 +128,41 @@ export function closeAdd(): void {
   useStore.setState({ addOpen: false })
 }
 
+export function toggleCourses(): void {
+  useStore.setState({ coursesOpen: !useStore.getState().coursesOpen })
+}
+
+export function closeCourses(): void {
+  useStore.setState({ coursesOpen: false })
+}
+
+export function addCourse(name: string): boolean {
+  const userId = uid()
+  const trimmed = trimName(name)
+  if (!userId || !trimmed || findCourseByName(trimmed)) return false
+  const state = useStore.getState()
+  const created: Course = {
+    id: crypto.randomUUID(),
+    name: trimmed,
+    color: nextCourseColor(Object.values(state.courses)),
+    ...meta(),
+  }
+  commit(
+    { upserts: [courseUpsert(created, userId)] },
+    { courses: { ...state.courses, [created.id]: created } },
+    { label: `Add ${trimmed}`, ops: [{ col: 'courses', id: created.id, before: null, after: created }] },
+  )
+  return true
+}
+
+function dueDate(date: DateStr | null): DateStr | null {
+  return date ? date : null
+}
+
+function importanceOf(value: Importance | null): Importance | null {
+  return value === 'low' || value === 'high' ? value : null
+}
+
 export function closeEditor(): void {
   const armed = useStore.getState().armed
   useStore.setState({
@@ -129,23 +174,27 @@ export function closeEditor(): void {
 export function submitAdd(input: {
   kind: WorkKind
   title: string
-  date: DateStr
+  date: DateStr | null
   course: Course | null
-  createName: string | null
+  estimate: number | null
+  importance: Importance | null
 }): void {
   const userId = uid()
   const state = useStore.getState()
   const title = trimTitle(input.title)
   if (!title || !userId) return
+  const date = dueDate(input.date)
+  const importance = importanceOf(input.importance)
   if (input.kind === 'task') {
     const item: WorkItem = {
       id: crypto.randomUUID(),
       courseId: null,
       kind: 'task',
       title,
-      date: input.date,
+      date,
       completedAt: null,
-      estimateMinutes: null,
+      estimateMinutes: input.estimate,
+      importance,
       ...meta(),
     }
     commit(
@@ -158,49 +207,27 @@ export function submitAdd(input: {
     )
     return
   }
-  let course = input.course
-  let created: Course | null = null
-  if (!course && input.createName) {
-    const name = trimName(input.createName)
-    course = findCourseByName(name)
-    if (!course && name) {
-      created = {
-        id: crypto.randomUUID(),
-        name,
-        color: nextCourseColor(Object.values(state.courses)),
-        ...meta(),
-      }
-      course = created
-    }
-  }
-  if (!course) return
+  const course = input.course
+  if (!course || !date) return
   const item: WorkItem = {
     id: crypto.randomUUID(),
     courseId: course.id,
     kind: input.kind,
     title,
-    date: input.date,
+    date,
     completedAt: null,
-    estimateMinutes: null,
+    estimateMinutes: input.kind === 'exam' ? null : input.estimate,
+    importance,
     ...meta(),
   }
   saveLastCourseId(course.id)
-  const ops: UndoOp[] = []
-  const upserts: UpsertChange[] = []
-  if (created) {
-    ops.push({ col: 'courses', id: created.id, before: null, after: created })
-    upserts.push(courseUpsert(created, userId))
-  }
-  ops.push({ col: 'workItems', id: item.id, before: null, after: item })
-  upserts.push(itemUpsert(item, userId))
   commit(
-    { upserts },
+    { upserts: [itemUpsert(item, userId)] },
     {
-      courses: created ? { ...state.courses, [created.id]: created } : state.courses,
       workItems: { ...state.workItems, [item.id]: item },
       addOpen: false,
     },
-    { label: `Add ${title}`, ops },
+    { label: `Add ${title}`, ops: [{ col: 'workItems', id: item.id, before: null, after: item }] },
   )
 }
 
@@ -239,25 +266,28 @@ export function saveEdit(input: {
   id: string
   kind: WorkKind
   title: string
-  date: DateStr
+  date: DateStr | null
   course: Course | null
-  createName: string | null
   color: Course['color']
   estimate: number | null
+  importance: Importance | null
 }): boolean {
   const userId = uid()
   const state = useStore.getState()
   const existing = state.workItems[input.id]
   const title = trimTitle(input.title)
   if (!existing || !title || !userId) return false
+  const date = dueDate(input.date)
+  const importance = importanceOf(input.importance)
   if (input.kind === 'task') {
     const item: WorkItem = {
       ...existing,
       courseId: null,
       kind: 'task',
       title,
-      date: input.date,
+      date,
       estimateMinutes: input.estimate,
+      importance,
       ...meta(existing),
     }
     const changed =
@@ -265,7 +295,8 @@ export function saveEdit(input: {
       item.kind !== existing.kind ||
       item.title !== existing.title ||
       item.date !== existing.date ||
-      item.estimateMinutes !== existing.estimateMinutes
+      item.estimateMinutes !== existing.estimateMinutes ||
+      item.importance !== existing.importance
     if (!changed) {
       useStore.setState({ editingWorkItemId: null, armed: null })
       return true
@@ -281,25 +312,13 @@ export function saveEdit(input: {
     )
     return true
   }
-  let course = input.course
-  let created: Course | null = null
-  if (!course && input.createName) {
-    const name = trimName(input.createName)
-    course = findCourseByName(name)
-    if (!course && name) {
-      created = { id: crypto.randomUUID(), name, color: input.color, ...meta() }
-      course = created
-    }
-  }
-  if (!course) return false
+  const picked = input.course
+  if (!picked || !date) return false
   const ops: UndoOp[] = []
   const upserts: UpsertChange[] = []
   let courses = state.courses
-  if (created) {
-    ops.push({ col: 'courses', id: created.id, before: null, after: created })
-    upserts.push(courseUpsert(created, userId))
-    courses = { ...courses, [created.id]: created }
-  } else if (course.color !== input.color) {
+  let course = picked
+  if (course.color !== input.color) {
     const next: Course = { ...course, color: input.color, ...meta(course) }
     ops.push({ col: 'courses', id: course.id, before: course, after: next })
     upserts.push(courseUpsert(next, userId))
@@ -311,17 +330,18 @@ export function saveEdit(input: {
     courseId: course.id,
     kind: input.kind,
     title,
-    date: input.date,
+    date,
     estimateMinutes: input.estimate,
+    importance,
     ...meta(existing),
   }
   const changed =
-    created !== null ||
     item.courseId !== existing.courseId ||
     item.kind !== existing.kind ||
     item.title !== existing.title ||
     item.date !== existing.date ||
     item.estimateMinutes !== existing.estimateMinutes ||
+    item.importance !== existing.importance ||
     ops.length > 0
   if (!changed) {
     useStore.setState({ editingWorkItemId: null, armed: null })

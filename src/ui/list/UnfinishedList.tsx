@@ -17,6 +17,7 @@ export function UnfinishedList() {
     ['Tonight', groups.tonight],
     ['Tomorrow', groups.tomorrow],
     ['Later', groups.later],
+    ['No date', groups.undated],
   ] as const
   const visible = blocks.filter(([, rows]) => rows.length > 0)
   const courseCount = Object.keys(courses).length
@@ -31,7 +32,7 @@ export function UnfinishedList() {
       {loaded && unfinished === 0 ? (
         <p className={styles.empty}>
           {courseCount === 0
-            ? "Add a task, or a course and the first homework or exam that's due. It stays on this list until you check it off."
+            ? "Add a task, or add a course from the Courses menu and the first homework or exam that's due. It stays on this list until you check it off."
             : 'Nothing due. Add homework or a task when you get it.'}
         </p>
       ) : null}

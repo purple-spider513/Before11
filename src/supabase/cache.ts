@@ -75,11 +75,28 @@ export function loadAll(): CacheSnapshot {
       continue
     }
     if (table === 'courses') snapshot.courses[String(parsed.id)] = parsed as unknown as Course
-    else if (table === 'work_items') snapshot.workItems[String(parsed.id)] = parsed as unknown as WorkItem
+    else if (table === 'work_items') snapshot.workItems[String(parsed.id)] = workItemFromDb(modelRow(parsed))
     else if (table === 'sessions') snapshot.sessions[String(parsed.id)] = parsed as unknown as Session
     else if (table === 'profiles') snapshot.profile = parsed as unknown as Profile
   }
   return snapshot
+}
+
+/** Cache stores the app model. Map it back through the row reader so older rows gain new fields. */
+function modelRow(parsed: Record<string, unknown>): Record<string, unknown> {
+  return {
+    id: parsed.id,
+    course_id: parsed.courseId ?? null,
+    kind: parsed.kind,
+    title: parsed.title,
+    date: parsed.date ?? null,
+    completed_at: parsed.completedAt ?? null,
+    estimate_minutes: parsed.estimateMinutes ?? null,
+    importance: parsed.importance ?? null,
+    created_at: parsed.createdAt,
+    updated_at: parsed.updatedAt,
+    updated_by: parsed.updatedBy,
+  }
 }
 
 export function modelFromRemote(table: Table, row: Record<string, unknown>): Course | WorkItem | Session | Profile {

@@ -25,6 +25,7 @@ export interface State {
   firstClick: { date: DateStr; minute: number } | null
   editingWorkItemId: string | null
   addOpen: boolean
+  coursesOpen: boolean
   popover:
     | { kind: 'plain'; sessionId: string; date: DateStr; isNew: boolean }
     | { kind: 'overflow'; date: DateStr; ids: string[] }
@@ -55,6 +56,7 @@ export const useStore = create<State>(() => ({
   firstClick: null,
   editingWorkItemId: null,
   addOpen: false,
+  coursesOpen: false,
   popover: null,
   monthOverlayDate: null,
   toast: null,

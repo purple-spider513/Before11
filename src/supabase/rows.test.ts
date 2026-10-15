@@ -19,6 +19,7 @@ const item: WorkItem = {
   date: '2026-09-25',
   completedAt: null,
   estimateMinutes: 60,
+  importance: null,
   createdAt: 10,
   updatedAt: 20,
   updatedBy: 'dev',
@@ -45,9 +46,25 @@ describe('rows', () => {
     expect(courseToDb(course, 'user').user_id).toBe('user')
     expect(workItemFromDb(workItemToDb(item, 'user'))).toEqual(item)
     expect(workItemToDb(item, 'user').completed_at).toBeNull()
-    const task: WorkItem = { ...item, id: 'w2', kind: 'task', courseId: null, title: 'Email teacher', estimateMinutes: null }
+    const task: WorkItem = {
+      ...item,
+      id: 'w2',
+      kind: 'task',
+      courseId: null,
+      title: 'Email teacher',
+      date: null,
+      estimateMinutes: null,
+      importance: 'low',
+    }
     expect(workItemToDb(task, 'user').course_id).toBeNull()
+    expect(workItemToDb(task, 'user').date).toBeNull()
+    expect(workItemToDb(task, 'user').importance).toBe('low')
     expect(workItemFromDb(workItemToDb(task, 'user'))).toEqual(task)
+    const legacy = workItemToDb(item, 'user')
+    delete legacy.importance
+    expect(workItemFromDb(legacy).importance).toBeNull()
+    expect(workItemFromDb({ ...legacy, kind: 'task', course_id: null, date: null }).date).toBeNull()
+    expect(workItemFromDb({ ...workItemToDb(item, 'user'), importance: 'urgent' }).importance).toBeNull()
     expect(workItemFromDb({ ...workItemToDb(item, 'user'), kind: 'task', course_id: 'c1' }).courseId).toBeNull()
     expect(workItemFromDb({ ...workItemToDb(item, 'user'), kind: 'note' }).kind).toBe('homework')
     expect(sessionFromDb(sessionToDb(session, 'user'))).toEqual(session)

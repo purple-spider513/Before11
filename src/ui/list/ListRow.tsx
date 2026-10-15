@@ -44,7 +44,7 @@ export function ListRow({ item }: { item: WorkItem }) {
                 <span> · </span>
               </>
             ) : null}
-            <span className={item.date < today ? styles.overdue : undefined}>{dateText}</span>
+            <span className={item.date != null && item.date < today ? styles.overdue : undefined}>{dateText}</span>
           </div>
           <div className={styles.right}>
             {hasEstimate ? (

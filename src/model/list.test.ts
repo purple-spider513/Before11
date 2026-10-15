@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { dateFieldLabel, groupUnfinished, noTime, plannedMinutes, rowDateText, workKindLabel } from './list.ts'
+import {
+  compareDueDate,
+  dateFieldLabel,
+  groupUnfinished,
+  matchingCourses,
+  noTime,
+  plannedMinutes,
+  rowDateText,
+  tomorrowCount,
+  workKindLabel,
+} from './list.ts'
 import type { Course, PaletteKey, Session, WorkItem } from './types.ts'
 
 const today = '2026-09-24'
@@ -14,6 +24,7 @@ function item(partial: Partial<WorkItem> & Pick<WorkItem, 'id' | 'title' | 'date
     kind: 'homework',
     completedAt: null,
     estimateMinutes: null,
+    importance: null,
     createdAt: 0,
     updatedAt: 0,
     updatedBy: 'test',
@@ -61,6 +72,7 @@ describe('groupUnfinished', () => {
     expect(groups.tonight.map((i) => i.id)).toEqual(['d', 'c'])
     expect(groups.tomorrow.map((i) => i.id)).toEqual(['e'])
     expect(groups.later.map((i) => i.id)).toEqual(['g', 'f'])
+    expect(groups.undated).toEqual([])
   })
 
   it('formats row dates', () => {
@@ -94,6 +106,53 @@ describe('groupUnfinished', () => {
     expect(groups.tomorrow[0].courseId).toBeNull()
     expect(groups.later.map((i) => i.id)).toEqual(['hw', 'later-task'])
     expect(rowDateText(groups.tomorrow[0], today)).toBe('Task · Tomorrow')
+  })
+
+  it('keeps an undated task after dated items and ignores importance', () => {
+    const groups = groupUnfinished(
+      [
+        item({ id: 'later', title: 'Essay', date: '2026-10-02', courseId: 'math' }),
+        item({ id: 'book', title: 'Return the book', date: null, courseId: null, kind: 'task', importance: 'high' }),
+        item({ id: 'paper', title: 'Buy paper', date: null, courseId: null, kind: 'task', importance: 'low' }),
+        item({ id: 'done', title: 'Already done', date: null, courseId: null, kind: 'task', completedAt: today }),
+        item({ id: 'high', title: 'Zebra', date: today, courseId: 'math', importance: 'high' }),
+        item({ id: 'low', title: 'Alpha', date: today, courseId: 'math', importance: 'low' }),
+      ],
+      courses,
+      today,
+    )
+    expect(groups.later.map((i) => i.id)).toEqual(['later'])
+    expect(groups.undated.map((i) => i.id)).toEqual(['paper', 'book'])
+    expect(groups.tonight.map((i) => i.id)).toEqual(['low', 'high'])
+    expect(rowDateText(groups.undated[0], today)).toBe('Task · No date')
+    expect(
+      tomorrowCount(
+        [
+          groups.undated[0],
+          item({ id: 'tmw', title: 'Sketch', date: '2026-09-25', courseId: 'art' }),
+        ],
+        today,
+      ),
+    ).toBe(1)
+    expect(compareDueDate(null, today)).toBeGreaterThan(0)
+    expect(compareDueDate(today, null)).toBeLessThan(0)
+    expect(compareDueDate(null, null)).toBe(0)
+  })
+
+  it('filters saved courses by a typed fragment', () => {
+    const list = [
+      course('eng', 'English'),
+      course('mvc', 'Multivariable and Vector Calculus'),
+      course('mus', 'Music'),
+    ]
+    expect(matchingCourses(list, 'mul').map((entry) => entry.name)).toEqual(['Multivariable and Vector Calculus'])
+    expect(matchingCourses(list, 'MUL').map((entry) => entry.name)).toEqual(['Multivariable and Vector Calculus'])
+    expect(matchingCourses(list, '').map((entry) => entry.name)).toEqual([
+      'English',
+      'Multivariable and Vector Calculus',
+      'Music',
+    ])
+    expect(matchingCourses(list, 'zzz')).toEqual([])
   })
 })
 
