@@ -1,9 +1,11 @@
-import { headerLabel, stepWord } from '../model/range.ts'
+import { useEffect } from 'react'
 import { groupUnfinished } from '../model/list.ts'
-import { goToday, setView, stepRange, toggleList } from '../store/actions.ts'
+import { headerLabel, stepWord } from '../model/range.ts'
+import { closeCourses, goToday, setView, stepRange, toggleCourses, toggleList } from '../store/actions.ts'
 import { useStore } from '../store/store.ts'
 import { hideTooltip, showTooltip } from './Tooltip.tsx'
 import { StatusSlot } from './StatusSlot.tsx'
+import { CoursesMenu } from './list/CoursesMenu.tsx'
 import styles from './Header.module.css'
 import type { View } from '../model/types.ts'
 
@@ -21,11 +23,22 @@ export function Header() {
   const today = useStore((s) => s.today)
   const items = useStore((s) => s.workItems)
   const courses = useStore((s) => s.courses)
+  const user = useStore((s) => s.user)
+  const coursesOpen = useStore((s) => s.coursesOpen)
   const groups = groupUnfinished(Object.values(items), courses, today)
-  const unfinished = groups.overdue.length + groups.tonight.length + groups.tomorrow.length + groups.later.length
+  const unfinished =
+    groups.overdue.length +
+    groups.tonight.length +
+    groups.tomorrow.length +
+    groups.later.length +
+    groups.undated.length
   const overdue = groups.overdue.length
   const word = stepWord(view)
   const label = headerLabel(view, anchor)
+
+  useEffect(() => {
+    if (!user && coursesOpen) closeCourses()
+  }, [user, coursesOpen])
 
   return (
     <header className={styles.header}>
@@ -38,6 +51,21 @@ export function Header() {
           'Hide list'
         )}
       </button>
+      {user ? (
+        <div id="b11-courses-root" className={styles.menuWrap}>
+          <button
+            id="b11-courses"
+            type="button"
+            className="btn"
+            aria-expanded={coursesOpen}
+            aria-haspopup="dialog"
+            onClick={() => toggleCourses()}
+          >
+            Courses
+          </button>
+          {coursesOpen ? <CoursesMenu /> : null}
+        </div>
+      ) : null}
       <button type="button" className="btn" onClick={() => goToday()}>
         Today
       </button>

@@ -1,14 +1,12 @@
-import { useImperativeHandle, useMemo, useState, type KeyboardEvent, type Ref } from 'react'
+import { useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent, type Ref } from 'react'
+import { matchingCourses } from '../../model/list.ts'
 import { swatch } from '../../model/palette.ts'
 import type { Course } from '../../model/types.ts'
 import { findCourseByName, trimName } from '../../store/actions.ts'
 import { useStore } from '../../store/store.ts'
 import styles from './CourseField.module.css'
 
-export type CourseResolve =
-  | { kind: 'course'; course: Course }
-  | { kind: 'create'; name: string }
-  | { kind: 'empty' }
+export type CourseResolve = { kind: 'course'; course: Course } | { kind: 'empty' }
 
 export interface CourseFieldHandle {
   resolve: () => CourseResolve
@@ -29,46 +27,39 @@ export function CourseField({
   handleRef: Ref<CourseFieldHandle>
 }) {
   const courses = useStore((s) => s.courses)
-  const list = useMemo(
-    () => Object.values(courses).sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })),
-    [courses],
-  )
+  const list = useMemo(() => Object.values(courses), [courses])
+  const matches = useMemo(() => matchingCourses(list, value), [list, value])
   const [open, setOpen] = useState(false)
   const [hi, setHi] = useState(0)
-  const typed = trimName(value)
-  const matches = list.filter((course) => course.name.toLowerCase().includes(typed.toLowerCase())).slice(0, 6)
-  const exact = typed
-    ? list.find((course) => course.name.localeCompare(typed, undefined, { sensitivity: 'base' }) === 0)
-    : undefined
-  const showCreate = typed.length > 0 && !exact
-  const rows = matches.length + (showCreate ? 1 : 0)
+  const closeTimer = useRef<number | undefined>(undefined)
 
   useImperativeHandle(handleRef, () => ({
     focus() {
       if (typeof inputRef === 'object' && inputRef && 'current' in inputRef) inputRef.current?.focus()
     },
     resolve(): CourseResolve {
-      if (open && rows > 0) {
-        if (showCreate && hi === matches.length) return { kind: 'create', name: typed }
-        const picked = matches[hi]
-        if (picked) return { kind: 'course', course: picked }
-      }
-      const found = findCourseByName(value)
-      if (found) return { kind: 'course', course: found }
-      if (typed) return { kind: 'create', name: typed }
+      if (matches.length === 0) return { kind: 'empty' }
+      if (open && matches[hi]) return { kind: 'course', course: matches[hi] }
+      const exact = findCourseByName(value)
+      if (exact) return { kind: 'course', course: exact }
+      if (matches.length === 1 && trimName(value)) return { kind: 'course', course: matches[0] }
       return { kind: 'empty' }
     },
   }))
 
   function onKey(e: KeyboardEvent<HTMLInputElement>) {
-    if (!open || rows === 0) return
+    if (!open || matches.length === 0) return
     if (e.key === 'ArrowDown') {
       e.preventDefault()
-      setHi((n) => (n + 1) % rows)
+      setHi((n) => (n + 1) % matches.length)
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
-      setHi((n) => (n - 1 + rows) % rows)
+      setHi((n) => (n - 1 + matches.length) % matches.length)
     }
+  }
+
+  if (list.length === 0) {
+    return <p className={styles.none}>Add a course in the Courses menu.</p>
   }
 
   return (
@@ -78,35 +69,33 @@ export function CourseField({
         className={invalid ? 'field invalid' : 'field'}
         placeholder="Course"
         aria-label="Course"
+        role="combobox"
+        aria-expanded={open && matches.length > 0}
+        aria-autocomplete="list"
         value={value}
         onFocus={() => {
+          window.clearTimeout(closeTimer.current)
           setOpen(true)
-          setHi(showCreate ? matches.length : 0)
+          setHi(0)
         }}
         onBlur={() => {
-          window.setTimeout(() => setOpen(false), 0)
+          closeTimer.current = window.setTimeout(() => setOpen(false), 0)
         }}
         onChange={(e) => {
-          const next = e.target.value
-          onChange(next)
-          const name = trimName(next)
-          const nextMatches = list
-            .filter((course) => course.name.toLowerCase().includes(name.toLowerCase()))
-            .slice(0, 6)
-          const nextExact = name
-            ? list.some((course) => course.name.localeCompare(name, undefined, { sensitivity: 'base' }) === 0)
-            : false
+          onChange(e.target.value)
           setOpen(true)
-          setHi(!nextExact && name ? nextMatches.length : 0)
+          setHi(0)
         }}
         onKeyDown={onKey}
       />
-      {open && list.length > 0 ? (
-        <div className={styles.menu}>
+      {open && matches.length > 0 ? (
+        <div className={styles.menu} role="listbox" aria-label="Courses">
           {matches.map((course, index) => (
             <button
               key={course.id}
               type="button"
+              role="option"
+              aria-selected={index === hi}
               className={index === hi ? styles.on : styles.row}
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => {
@@ -119,16 +108,6 @@ export function CourseField({
               {course.name}
             </button>
           ))}
-          {showCreate ? (
-            <button
-              type="button"
-              className={hi === matches.length ? styles.on : styles.row}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => setOpen(false)}
-            >
-              Create "{typed}"
-            </button>
-          ) : null}
         </div>
       ) : null}
     </div>
