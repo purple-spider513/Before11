@@ -1,6 +1,6 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { swatch, plainSwatches } from '../../model/palette.ts'
-import type { BlockColor, Session, WorkItem } from '../../model/types.ts'
+import { courseById, type BlockColor, type Session, type WorkItem } from '../../model/types.ts'
 import { commitPlainClose, deleteSession, patchPlain, setPlainLink } from '../../store/actions.ts'
 import { useStore } from '../../store/store.ts'
 import { blockEls, segKey } from './gesture/liveLayout.ts'
@@ -74,9 +74,11 @@ export function PlainPopover({ sessionId, date, isNew }: { sessionId: string; da
     const items = Object.values(workItems).filter((item) => item.completedAt == null || item.id === linkedId)
     items.sort((a, b) => {
       if (a.date !== b.date) return a.date < b.date ? -1 : 1
-      const course = (courses[a.courseId]?.name ?? '').localeCompare(courses[b.courseId]?.name ?? '', undefined, {
-        sensitivity: 'base',
-      })
+      const course = (courseById(courses, a.courseId)?.name ?? '').localeCompare(
+        courseById(courses, b.courseId)?.name ?? '',
+        undefined,
+        { sensitivity: 'base' },
+      )
       if (course !== 0) return course
       return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' })
     })
@@ -85,7 +87,7 @@ export function PlainPopover({ sessionId, date, isNew }: { sessionId: string; da
 
   if (!session) return null
   const linkedItem = session.workItemId ? workItems[session.workItemId] : undefined
-  const linkedCourse = linkedItem ? courses[linkedItem.courseId] : undefined
+  const linkedCourse = courseById(courses, linkedItem?.courseId)
   const linked = session.workItemId != null && linkedItem != null
   const shownTitle =
     linked && linkedItem ? `${linkedCourse?.name ? `${linkedCourse.name} · ` : ''}${linkedItem.title}` : title
@@ -203,8 +205,8 @@ export function PlainPopover({ sessionId, date, isNew }: { sessionId: string; da
             <Choice
               key={item.id}
               item={item}
-              courseName={courses[item.courseId]?.name ?? ''}
-              fill={swatch(courses[item.courseId]?.color ?? 'slate').fill}
+              courseName={courseById(courses, item.courseId)?.name ?? ''}
+              fill={swatch(courseById(courses, item.courseId)?.color ?? 'slate').fill}
               pressed={session.workItemId === item.id}
               onPick={() => pick(item.id)}
             />

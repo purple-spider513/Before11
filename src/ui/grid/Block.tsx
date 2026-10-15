@@ -1,8 +1,9 @@
 import { useLayoutEffect, useRef } from 'react'
 import { formatDoneDate } from '../../model/dates.ts'
 import { formatRange, formatSpokenRange } from '../../model/minutes.ts'
+import { withCourse } from '../../model/list.ts'
 import { swatch } from '../../model/palette.ts'
-import type { View } from '../../model/types.ts'
+import { courseById, type View } from '../../model/types.ts'
 import { openOverflow } from '../../store/actions.ts'
 import { rememberAnchor } from './OverflowPopover.tsx'
 import { useStore } from '../../store/store.ts'
@@ -40,7 +41,7 @@ export function Block({
 }) {
   const session = useStore((s) => s.sessions[sessionId])
   const item = useStore((s) => (session?.workItemId ? s.workItems[session.workItemId] : undefined))
-  const course = useStore((s) => (item ? s.courses[item.courseId] : undefined))
+  const course = useStore((s) => courseById(s.courses, item?.courseId))
   const today = useStore((s) => s.today)
   const ref = useRef<HTMLDivElement>(null)
   const key = segKey(sessionId, date)
@@ -71,7 +72,7 @@ export function Block({
         widthPx: width,
       })
   const spoken = formatSpokenRange(session.start, session.end)
-  const label = item ? `${course?.name ?? ''} · ${item.title}` : session.title || 'Busy'
+  const label = item ? withCourse(course?.name, item.title) : session.title || 'Busy'
   const inner = handleInner(height)
   const continues = session.end > 1440 && bottom === 1440
   const showTop = !continuation
@@ -189,8 +190,8 @@ function overflowTip(ids: string[]): string {
     if (!session) continue
     if (session.workItemId) {
       const item = state.workItems[session.workItemId]
-      const course = item ? state.courses[item.courseId] : undefined
-      lines.push(`${course?.name ?? ''} · ${item?.title ?? ''}`)
+      const course = courseById(state.courses, item?.courseId)
+      lines.push(withCourse(course?.name, item?.title ?? ''))
     } else lines.push(session.title || 'Busy')
   }
   return lines.join('\n')
