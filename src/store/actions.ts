@@ -1,7 +1,8 @@
 import { nextCourseColor } from '../model/courseColor.ts'
 import { clamp, snap5 } from '../model/minutes.ts'
 import { stepAnchor } from '../model/range.ts'
-import type { BlockColor, Course, DateStr, Session, View, WorkItem } from '../model/types.ts'
+import { courseById, type BlockColor, type Course, type DateStr, type Session, type View, type WorkItem, type WorkKind } from '../model/types.ts'
+import { withCourse } from '../model/list.ts'
 import { courseToDb, sessionToDb, workItemToDb } from '../supabase/rows.ts'
 import { enqueueWrite, scheduleWrite } from '../supabase/write.ts'
 import { holdWrites, type Change, type UpsertChange } from '../supabase/outbox.ts'
@@ -126,7 +127,7 @@ export function closeEditor(): void {
 }
 
 export function submitAdd(input: {
-  kind: 'homework' | 'exam'
+  kind: WorkKind
   title: string
   date: DateStr
   course: Course | null
@@ -136,6 +137,27 @@ export function submitAdd(input: {
   const state = useStore.getState()
   const title = trimTitle(input.title)
   if (!title || !userId) return
+  if (input.kind === 'task') {
+    const item: WorkItem = {
+      id: crypto.randomUUID(),
+      courseId: null,
+      kind: 'task',
+      title,
+      date: input.date,
+      completedAt: null,
+      estimateMinutes: null,
+      ...meta(),
+    }
+    commit(
+      { upserts: [itemUpsert(item, userId)] },
+      {
+        workItems: { ...state.workItems, [item.id]: item },
+        addOpen: false,
+      },
+      { label: `Add ${title}`, ops: [{ col: 'workItems', id: item.id, before: null, after: item }] },
+    )
+    return
+  }
   let course = input.course
   let created: Course | null = null
   if (!course && input.createName) {
@@ -215,7 +237,7 @@ export function openWorkItem(id: string): void {
 
 export function saveEdit(input: {
   id: string
-  kind: 'homework' | 'exam'
+  kind: WorkKind
   title: string
   date: DateStr
   course: Course | null
@@ -228,6 +250,37 @@ export function saveEdit(input: {
   const existing = state.workItems[input.id]
   const title = trimTitle(input.title)
   if (!existing || !title || !userId) return false
+  if (input.kind === 'task') {
+    const item: WorkItem = {
+      ...existing,
+      courseId: null,
+      kind: 'task',
+      title,
+      date: input.date,
+      estimateMinutes: input.estimate,
+      ...meta(existing),
+    }
+    const changed =
+      item.courseId !== existing.courseId ||
+      item.kind !== existing.kind ||
+      item.title !== existing.title ||
+      item.date !== existing.date ||
+      item.estimateMinutes !== existing.estimateMinutes
+    if (!changed) {
+      useStore.setState({ editingWorkItemId: null, armed: null })
+      return true
+    }
+    commit(
+      { upserts: [itemUpsert(item, userId)] },
+      {
+        workItems: { ...state.workItems, [item.id]: item },
+        editingWorkItemId: null,
+        armed: null,
+      },
+      { label: `Edit ${title}`, ops: [{ col: 'workItems', id: item.id, before: existing, after: item }] },
+    )
+    return true
+  }
   let course = input.course
   let created: Course | null = null
   if (!course && input.createName) {
@@ -640,8 +693,8 @@ export function sessionLabel(session: Session): string {
   const state = useStore.getState()
   if (session.workItemId) {
     const item = state.workItems[session.workItemId]
-    const course = item ? state.courses[item.courseId] : undefined
-    if (item) return `${course?.name ?? 'Course'} · ${item.title}`
+    const course = courseById(state.courses, item?.courseId)
+    if (item) return withCourse(course?.name, item.title)
   }
   return session.title?.trim() || 'Busy'
 }
