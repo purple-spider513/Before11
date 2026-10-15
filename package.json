@@ -1,0 +1,26 @@
+{
+  "name": "before11",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5199",
+    "build": "tsc -b && vite build && cp dist/index.html dist/404.html",
+    "test": "vitest run --passWithNoTests",
+    "preview": "vite preview --host 127.0.0.1 --port 5199"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^3.2.4"
+  }
+}
