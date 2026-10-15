@@ -1,0 +1,36 @@
+.toast {
+  position: fixed;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 60;
+  height: 36px;
+  max-width: 480px;
+  padding: 0 4px 0 12px;
+  border-radius: var(--radius-float);
+  background: var(--bg-toast);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--float-shadow);
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.undo {
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}

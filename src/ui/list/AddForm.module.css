@@ -1,0 +1,41 @@
+.form {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: var(--radius-float);
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hint {
+  margin: -4px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+}
+
+.dateLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+}
+
+.dateLabel input { color-scheme: dark; }
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.keys {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-3);
+}

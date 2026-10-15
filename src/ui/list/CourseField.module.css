@@ -1,0 +1,40 @@
+.wrap { position: relative; }
+
+.menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 36px;
+  z-index: 50;
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  box-shadow: var(--float-shadow);
+  padding: 0;
+}
+
+.row,
+.on {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 18px;
+  text-align: left;
+}
+
+.on { background: var(--accent-soft); }
+
+.row i,
+.on i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+}

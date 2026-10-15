@@ -1,0 +1,77 @@
+.cell {
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 4px;
+  overflow: hidden;
+}
+
+.cell:hover { background: var(--cell-hover); }
+
+.open { box-shadow: inset 0 0 0 1px var(--accent); }
+
+.copy { cursor: copy; }
+
+.num,
+.other,
+.today {
+  height: 20px;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.num { color: var(--text-1); }
+.other { color: var(--text-3); }
+
+.today {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.exam,
+.chip,
+.timed,
+.more {
+  display: block;
+  width: 100%;
+  height: 18px;
+  margin-top: 2px;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.exam {
+  border: 0;
+  color: var(--text-on-fill);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip {
+  border: 1.5px solid var(--text-2);
+  color: var(--text-1);
+  cursor: grab;
+  touch-action: none;
+}
+
+.chipOn { background: var(--accent-soft); }
+
+.timed {
+  color: var(--text-on-fill);
+}
+
+.more {
+  color: var(--text-2);
+  padding: 0;
+}

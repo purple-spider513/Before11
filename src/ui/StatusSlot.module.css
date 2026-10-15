@@ -1,0 +1,20 @@
+.pill,
+.armed {
+  height: 24px;
+  max-width: 520px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 22px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.armed {
+  color: var(--text-1);
+  border-color: var(--accent);
+}

@@ -1,0 +1,148 @@
+.overlay {
+  position: fixed;
+  z-index: 40;
+  width: 360px;
+  background: var(--bg-grid);
+  border: 1px solid var(--line-overlay);
+  border-radius: var(--radius-float);
+  box-shadow: var(--float-shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.head {
+  height: 32px;
+  padding: 0 8px 0 12px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+}
+
+.title {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.close {
+  height: 24px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.close:hover { color: var(--text-1); }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--line);
+  max-height: 72px;
+  overflow: hidden;
+  flex: none;
+}
+
+.exam,
+.chip,
+.more {
+  height: 20px;
+  border-radius: 4px;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.exam {
+  border: 0;
+  color: var(--text-on-fill);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip {
+  border: 1.5px solid var(--text-2);
+  color: var(--text-1);
+  cursor: grab;
+  touch-action: none;
+}
+
+.chipOn { background: var(--accent-soft); }
+
+.more { color: var(--text-2); }
+
+.time {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) transparent;
+}
+
+.plane {
+  display: flex;
+  height: 1536px;
+}
+
+.gutter {
+  position: relative;
+  width: 44px;
+  flex: none;
+}
+
+.columns {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+
+.drag {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  top: 0;
+  border-radius: var(--radius-block);
+  overflow: hidden;
+  color: var(--text-on-fill);
+  pointer-events: none;
+}
+
+.preview {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  top: 0;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-block);
+  color: var(--text-1);
+  font-size: 11px;
+  line-height: 14px;
+  padding: 3px 6px;
+  pointer-events: none;
+}
+
+.guide {
+  position: absolute;
+  right: 8px;
+  z-index: 6;
+  transform: translateY(-50%);
+  color: var(--accent);
+  background: var(--bg-grid);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  pointer-events: none;
+}

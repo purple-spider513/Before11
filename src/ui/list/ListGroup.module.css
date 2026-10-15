@@ -1,0 +1,23 @@
+.group { margin-top: 8px; }
+
+.first { margin-top: 12px; }
+
+.head {
+  height: 28px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.label {
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.count {
+  font-weight: 400;
+  color: var(--text-3);
+}

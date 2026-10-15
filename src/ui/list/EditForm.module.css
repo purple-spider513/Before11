@@ -1,0 +1,56 @@
+.form {
+  padding: 12px;
+  border-radius: var(--radius-float);
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hint {
+  margin: -4px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+}
+
+.dateLabel,
+.estimate {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+}
+
+.dateLabel input,
+.estimate input { color-scheme: dark; }
+
+.estimate span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.estimate input { width: 96px; }
+
+.min { font-size: 12px; color: var(--text-2); }
+
+.colors { display: flex; gap: 4px; }
+
+.swatch,
+.swatchOn {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: var(--radius-control);
+  padding: 0;
+}
+
+.swatchOn {
+  box-shadow: 0 0 0 2px var(--bg-raised), 0 0 0 4px var(--text-on-fill);
+}
+
+.row { display: flex; justify-content: space-between; }
