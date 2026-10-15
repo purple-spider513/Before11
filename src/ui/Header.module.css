@@ -46,3 +46,8 @@
 }
 
 .overdue { color: var(--overdue); }
+
+.menuWrap {
+  position: relative;
+  flex: none;
+}

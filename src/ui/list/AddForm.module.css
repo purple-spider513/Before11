@@ -16,17 +16,6 @@
   color: var(--text-2);
 }
 
-.dateLabel {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--text-2);
-}
-
-.dateLabel input { color-scheme: dark; }
-
 .row {
   display: flex;
   align-items: center;

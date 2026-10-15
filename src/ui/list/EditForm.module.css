@@ -15,29 +15,6 @@
   color: var(--text-2);
 }
 
-.dateLabel,
-.estimate {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--text-2);
-}
-
-.dateLabel input,
-.estimate input { color-scheme: dark; }
-
-.estimate span {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.estimate input { width: 96px; }
-
-.min { font-size: 12px; color: var(--text-2); }
-
 .colors { display: flex; gap: 4px; }
 
 .swatch,
