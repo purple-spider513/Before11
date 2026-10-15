@@ -1,0 +1,47 @@
+:root {
+  /* surfaces */
+  --bg-grid: #0F0F12;
+  --bg-list: #131317;
+  --bg-raised: #1B1B21;
+  --bg-toast: #26262E;
+  --bg-control: #1E1E24;
+  --bg-control-hover: #26262E;
+  --bg-control-active: #2F2F3A;
+  --bg-input: #0F0F12;
+  --hover: rgba(255, 255, 255, 0.05);
+  --cell-hover: rgba(255, 255, 255, 0.03);
+
+  /* lines */
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.12);
+  --line-overlay: rgba(255, 255, 255, 0.16);
+
+  /* text */
+  --text-1: #EDEDF0;
+  --text-2: #A1A1AA;
+  --text-3: #8A8A94;
+  --text-on-fill: #FFFFFF;
+
+  /* signal */
+  --accent: #8AB4FF;
+  --accent-ink: #0F0F12;
+  --accent-soft: rgba(138, 180, 255, 0.14);
+  --overdue: #E05A6A;
+
+  --float-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --header-h: 44px;
+  --list-w: 280px;
+  --gutter-w: 48px;
+  --dayhead-h: 28px;
+  --hour-h: 64px;
+  --radius-block: 4px;
+  --radius-control: 6px;
+  --radius-float: 8px;
+
+  /* literals from the grid spec, kept here so components only use variables */
+  --scrollbar: #3A3A44;
+  --pill: rgba(0, 0, 0, 0.35);
+}
