@@ -1,0 +1,39 @@
+.header {
+  position: relative;
+  height: var(--header-h);
+  background: var(--bg-grid);
+  border-bottom: 1px solid var(--line);
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 20;
+  min-width: 0;
+}
+
+.step {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--line-strong);
+  background: var(--bg-control);
+  color: var(--text-1);
+  font-size: 16px;
+  line-height: 26px;
+}
+
+.step:hover { background: var(--bg-control-hover); }
+.step:active { background: var(--bg-control-active); }
+
+.range {
+  margin-left: 4px;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.spacer { flex: 1; min-width: 8px; }
+
+.overdue { color: var(--overdue); }

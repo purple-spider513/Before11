@@ -1,0 +1,64 @@
+.strip {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-grid);
+  z-index: 10;
+}
+
+.gutter {
+  width: var(--gutter-w);
+  flex: none;
+  align-self: center;
+  text-align: right;
+  padding-right: 8px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-3);
+}
+
+.cell {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px;
+}
+
+.copy { cursor: copy; }
+
+.exam,
+.chip,
+.more {
+  height: 20px;
+  border-radius: 4px;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.exam {
+  border: 0;
+  color: var(--text-on-fill);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip {
+  border: 1.5px solid var(--text-2);
+  background: transparent;
+  color: var(--text-1);
+  cursor: grab;
+  touch-action: none;
+}
+
+.chipOn { background: var(--accent-soft); }
+
+.more {
+  color: var(--text-2);
+  padding: 0;
+}

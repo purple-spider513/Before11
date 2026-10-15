@@ -1,0 +1,57 @@
+.block {
+  position: absolute;
+  border-radius: var(--radius-block);
+  color: var(--text-on-fill);
+  overflow: hidden;
+  padding: 3px 6px;
+  cursor: grab;
+  touch-action: none;
+  z-index: 1;
+  text-align: left;
+}
+
+.block:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-grid), 0 0 0 4px var(--accent);
+}
+
+.on {
+  box-shadow: 0 0 0 2px var(--bg-grid), 0 0 0 4px var(--accent);
+  z-index: 2;
+}
+
+.line,
+.short {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 14px;
+}
+
+.line { font-size: 12px; }
+.short { font-size: 11px; }
+
+.handle,
+.handleBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  cursor: ns-resize;
+  touch-action: none;
+}
+
+.more {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  height: 16px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--pill);
+  color: var(--text-on-fill);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
