@@ -1,4 +1,6 @@
 export type DateStr = string
+export const WORK_KINDS = ['homework', 'exam', 'task'] as const
+export type WorkKind = (typeof WORK_KINDS)[number]
 export type PaletteKey =
   | 'violet'
   | 'blue'
@@ -25,12 +27,20 @@ export interface Course extends Meta {
 
 export interface WorkItem extends Meta {
   id: string
-  courseId: string
-  kind: 'homework' | 'exam'
+  /** Null only for a task. Homework and exams always have a course. */
+  courseId: string | null
+  kind: WorkKind
   title: string
   date: DateStr
   completedAt: DateStr | null
   estimateMinutes: number | null
+}
+
+export function courseById(
+  courses: Readonly<Record<string, Course>>,
+  id: string | null | undefined,
+): Course | undefined {
+  return id ? courses[id] : undefined
 }
 
 export interface Session extends Meta {
