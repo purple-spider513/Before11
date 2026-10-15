@@ -36,4 +36,13 @@
 
 .spacer { flex: 1; min-width: 8px; }
 
+.views {
+  flex: none;
+}
+
+.header .views button {
+  flex: none;
+  white-space: nowrap;
+}
+
 .overdue { color: var(--overdue); }

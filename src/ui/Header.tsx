@@ -68,7 +68,7 @@ export function Header() {
       <div className={`${styles.range} nums`}>{label}</div>
       <div className={styles.spacer} />
       <StatusSlot />
-      <div className="seg" role="group" aria-label="View">
+      <div className={`seg ${styles.views}`} role="group" aria-label="View">
         {VIEWS.map((item) => (
           <button key={item.id} type="button" aria-pressed={view === item.id} onClick={() => setView(item.id)}>
             {item.label}
