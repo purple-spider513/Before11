@@ -1,4 +1,14 @@
-import { WORK_KINDS, type BlockColor, type Course, type PaletteKey, type Profile, type Session, type WorkItem, type WorkKind } from '../model/types.ts'
+import {
+  WORK_KINDS,
+  type BlockColor,
+  type Course,
+  type Importance,
+  type PaletteKey,
+  type Profile,
+  type Session,
+  type WorkItem,
+  type WorkKind,
+} from '../model/types.ts'
 
 export type Table = 'courses' | 'work_items' | 'sessions' | 'profiles'
 
@@ -35,6 +45,7 @@ export function workItemToDb(item: WorkItem, userId: string): Record<string, unk
     date: item.date,
     completed_at: item.completedAt,
     estimate_minutes: item.estimateMinutes,
+    importance: item.importance,
     created_at: item.createdAt,
     updated_at: item.updatedAt,
     updated_by: item.updatedBy,
@@ -45,6 +56,10 @@ function workKindFromDb(value: unknown): WorkKind {
   return WORK_KINDS.includes(value as WorkKind) ? (value as WorkKind) : 'homework'
 }
 
+function importanceFromDb(value: unknown): Importance | null {
+  return value === 'low' || value === 'high' ? value : null
+}
+
 export function workItemFromDb(row: Record<string, unknown>): WorkItem {
   const kind = workKindFromDb(row.kind)
   const courseId = row.course_id == null || row.course_id === '' ? null : String(row.course_id)
@@ -53,9 +68,10 @@ export function workItemFromDb(row: Record<string, unknown>): WorkItem {
     courseId: kind === 'task' ? null : courseId,
     kind,
     title: String(row.title),
-    date: String(row.date),
+    date: row.date == null || row.date === '' ? null : String(row.date),
     completedAt: row.completed_at == null ? null : String(row.completed_at),
     estimateMinutes: row.estimate_minutes == null ? null : Number(row.estimate_minutes),
+    importance: importanceFromDb(row.importance),
     createdAt: Number(row.created_at),
     updatedAt: Number(row.updated_at),
     updatedBy: String(row.updated_by),
