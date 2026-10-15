@@ -441,7 +441,7 @@ function paintBlock(session: Session, start: number, end: number, col: number): 
   let rows: LabelPart[][]
   if (session.workItemId) {
     const item = state.workItems[session.workItemId]
-    const course = item ? state.courses[item.courseId] : undefined
+    const course = item?.courseId ? state.courses[item.courseId] : undefined
     fill = swatch(course?.color ?? 'slate').fill
     rows = linkedParts({
       course: course?.name ?? '',
@@ -477,7 +477,7 @@ function updateGhost(x: number, y: number): void {
     const minute = Math.max(0, Math.min(1380, Math.round(minuteAt(y) / 5) * 5))
     const state = useStore.getState()
     const item = state.workItems[press.workItemId]
-    const course = item ? state.courses[item.courseId] : undefined
+    const course = item?.courseId ? state.courses[item.courseId] : undefined
     const width = Math.max(0, measure.colW - 8)
     const rows = linkedParts({
       course: course?.name ?? '',
@@ -504,10 +504,10 @@ function updateGhost(x: number, y: number): void {
   if (ghostEl && dragKind === 'list' && press?.workItemId) {
     const state = useStore.getState()
     const item = state.workItems[press.workItemId]
-    const course = item ? state.courses[item.courseId] : undefined
+    const course = item?.courseId ? state.courses[item.courseId] : undefined
     ghostEl.hidden = false
     ghostEl.style.background = swatch(course?.color ?? 'violet').fill
-    ghostEl.textContent = `${course?.name ?? ''} · ${item?.title ?? ''}`
+    ghostEl.textContent = course?.name ? `${course.name} · ${item?.title ?? ''}` : (item?.title ?? '')
     ghostEl.style.transform = `translate(${x - ghostDX}px, ${y - ghostDY}px)`
   }
   if (dragKind === 'chip') positionChip(x, y)
