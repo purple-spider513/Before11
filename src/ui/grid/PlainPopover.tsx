@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { compareDueDate } from '../../model/list.ts'
 import { swatch, plainSwatches } from '../../model/palette.ts'
 import { courseById, type BlockColor, type Session, type WorkItem } from '../../model/types.ts'
 import { commitPlainClose, deleteSession, patchPlain, setPlainLink } from '../../store/actions.ts'
@@ -73,7 +74,8 @@ export function PlainPopover({ sessionId, date, isNew }: { sessionId: string; da
     const linkedId = session?.workItemId
     const items = Object.values(workItems).filter((item) => item.completedAt == null || item.id === linkedId)
     items.sort((a, b) => {
-      if (a.date !== b.date) return a.date < b.date ? -1 : 1
+      const date = compareDueDate(a.date, b.date)
+      if (date !== 0) return date
       const course = (courseById(courses, a.courseId)?.name ?? '').localeCompare(
         courseById(courses, b.courseId)?.name ?? '',
         undefined,
