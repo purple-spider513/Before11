@@ -116,6 +116,16 @@ export function EditForm({ id }: { id: string }) {
           </button>
         ))}
       </div>
+      <input
+        className={hint === 'title' ? 'field invalid' : 'field'}
+        aria-label="Title"
+        value={title}
+        onChange={(e) => {
+          setTitle(e.target.value)
+          setHint(null)
+        }}
+      />
+      {hint === 'title' ? <p className={styles.hint}>Add a title</p> : null}
       {kind === 'task' ? null : (
         <CourseField
           value={courseText}
@@ -133,16 +143,6 @@ export function EditForm({ id }: { id: string }) {
       {kind !== 'task' && hint === 'course' && courseCount > 0 ? (
         <p className={styles.hint}>Pick a course</p>
       ) : null}
-      <input
-        className={hint === 'title' ? 'field invalid' : 'field'}
-        aria-label="Title"
-        value={title}
-        onChange={(e) => {
-          setTitle(e.target.value)
-          setHint(null)
-        }}
-      />
-      {hint === 'title' ? <p className={styles.hint}>Add a title</p> : null}
       <DueField
         kind={kind}
         value={date}

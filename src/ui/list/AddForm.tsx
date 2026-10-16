@@ -125,6 +125,18 @@ export function AddForm() {
           </button>
         ))}
       </div>
+      <input
+        ref={titleRef}
+        className={hint === 'title' ? 'field invalid' : 'field'}
+        placeholder="What's due"
+        aria-label="Title"
+        value={title}
+        onChange={(e) => {
+          setTitle(e.target.value)
+          setHint(null)
+        }}
+      />
+      {hint === 'title' ? <p className={styles.hint}>Add a title</p> : null}
       {kind === 'task' ? null : (
         <CourseField
           value={courseText}
@@ -140,18 +152,6 @@ export function AddForm() {
       {kind !== 'task' && hint === 'course' && courseCount > 0 ? (
         <p className={styles.hint}>Pick a course</p>
       ) : null}
-      <input
-        ref={titleRef}
-        className={hint === 'title' ? 'field invalid' : 'field'}
-        placeholder="What's due"
-        aria-label="Title"
-        value={title}
-        onChange={(e) => {
-          setTitle(e.target.value)
-          setHint(null)
-        }}
-      />
-      {hint === 'title' ? <p className={styles.hint}>Add a title</p> : null}
       <DueField
         kind={kind}
         value={date}
