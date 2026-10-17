@@ -31,6 +31,16 @@
 
 .check:hover .box { border-color: var(--text-1); }
 
+.filled {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+:global(html[data-motion='on']) .held {
+  opacity: 0.72;
+  transition: opacity 160ms var(--ease-enter);
+}
+
 .body { min-width: 0; }
 
 .title {

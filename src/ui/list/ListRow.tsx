@@ -3,10 +3,13 @@ import { swatch } from '../../model/palette.ts'
 import { courseById, type WorkItem } from '../../model/types.ts'
 import { completeWorkItem } from '../../store/actions.ts'
 import { useStore } from '../../store/store.ts'
+import { takeElement } from '../depart.ts'
 import { downList } from '../grid/gesture/controller.ts'
+import { useHeld } from '../motion.ts'
 import styles from './ListRow.module.css'
 
 export function ListRow({ item }: { item: WorkItem }) {
+  const held = useHeld(item.id)
   const course = useStore((s) => courseById(s.courses, item.courseId))
   const sessions = useStore((s) => s.sessions)
   const today = useStore((s) => s.today)
@@ -17,7 +20,11 @@ export function ListRow({ item }: { item: WorkItem }) {
   const dateText = rowDateText(item, today)
 
   return (
-    <div className={styles.row} onPointerDown={(e) => downList(e, item.id)}>
+    <div
+      className={held ? `${styles.row} ${styles.held}` : styles.row}
+      data-list-row=""
+      onPointerDown={(e) => downList(e, item.id)}
+    >
       <button
         type="button"
         className={styles.check}
@@ -27,10 +34,16 @@ export function ListRow({ item }: { item: WorkItem }) {
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
           e.stopPropagation()
+          const row = e.currentTarget.closest('[data-list-row]')
+          if (row instanceof HTMLElement) {
+            takeElement(row, 'settle', {}, (node) => {
+              node.querySelector('[data-box]')?.classList.add(styles.filled)
+            })
+          }
           completeWorkItem(item.id)
         }}
       >
-        <span className={styles.box} />
+        <span className={styles.box} data-box="" />
       </button>
       <div className={styles.body}>
         <div className={styles.title}>{item.title}</div>

@@ -1,8 +1,12 @@
-.toast {
+.place {
   position: fixed;
   bottom: 16px;
   transform: translateX(-50%);
   z-index: 60;
+  max-width: 480px;
+}
+
+.toast {
   height: 36px;
   max-width: 480px;
   padding: 0 4px 0 12px;
@@ -33,4 +37,22 @@
   font-size: 13px;
   line-height: 18px;
   font-weight: 600;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+:global(html[data-motion='on']) .in {
+  animation-name: rise;
+  animation-duration: 160ms;
+  animation-timing-function: var(--ease-enter);
+  animation-fill-mode: both;
 }
