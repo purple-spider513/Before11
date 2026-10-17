@@ -37,12 +37,56 @@
 .spacer { flex: 1; min-width: 8px; }
 
 .views {
+  position: relative;
   flex: none;
 }
 
 .header .views button {
+  position: relative;
+  z-index: 1;
   flex: none;
   white-space: nowrap;
+}
+
+.thumb {
+  display: none;
+}
+
+:global(html[data-motion='on']) .thumb {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 5px;
+  background: var(--bg-control-active);
+  pointer-events: none;
+  transition: transform 160ms var(--ease-enter);
+}
+
+:global(html[data-motion='on']) .views button[aria-pressed='true'] {
+  background: transparent;
+}
+
+.motion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.motion span {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.motion button:disabled {
+  color: var(--text-3);
+}
+
+.motion button[aria-pressed='true']:disabled {
+  color: var(--text-2);
 }
 
 .overdue { color: var(--overdue); }
