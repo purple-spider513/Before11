@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { motionOn, placeToward } from '../motion.ts'
 import { compareDueDate } from '../../model/list.ts'
 import { swatch, plainSwatches } from '../../model/palette.ts'
 import { courseById, type BlockColor, type Session, type WorkItem } from '../../model/types.ts'
@@ -21,6 +22,7 @@ export function PlainPopover({ sessionId, date, isNew }: { sessionId: string; da
   const courses = useStore((s) => s.courses)
   const before = useRef<Session | null | undefined>(undefined)
   if (before.current === undefined) before.current = isNew || !session ? null : { ...session }
+  const [rise] = useState(() => motionOn())
   const [title, setTitle] = useState(isNew ? '' : session?.title ?? '')
   const [plainColor, setPlainColor] = useState<BlockColor>(session?.color ?? 'slate')
   const [plainRepeat, setPlainRepeat] = useState<Session['repeat']>(session?.repeat ?? 'none')
@@ -63,6 +65,7 @@ export function PlainPopover({ sessionId, date, isNew }: { sessionId: string; da
       top = Math.min(Math.max(52, top), Math.max(52, window.innerHeight - 8 - height))
       left = Math.min(Math.max(8, left), Math.max(8, window.innerWidth - 8 - width))
       setPos({ left, top })
+      placeToward(pop, block?.getBoundingClientRect() ?? null, left, width)
     }
     return () => {
       requestClose = null
@@ -104,11 +107,12 @@ export function PlainPopover({ sessionId, date, isNew }: { sessionId: string; da
   return (
     <div
       ref={rootRef}
-      className={styles.pop}
+      className={rise ? `${styles.pop} ${styles.rise}` : styles.pop}
       style={{ left: pos.left, top: pos.top }}
       role="dialog"
       aria-label="Block"
       data-plain-popover=""
+      data-float-pop=""
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.preventDefault()
