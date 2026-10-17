@@ -43,6 +43,8 @@
   pointer-events: none;
   left: 0;
   top: 0;
+  transition: none;
+  animation: none;
 }
 
 .preview {
