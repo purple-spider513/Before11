@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react'
+import { motionOn } from '../motion.ts'
 import { createPortal } from 'react-dom'
 import { formatOverlayTitle } from '../../model/dates.ts'
 import type { DateStr } from '../../model/types.ts'
@@ -25,6 +26,7 @@ export function MonthOverlay({ date, geom }: { date: DateStr; geom: MonthGeom | 
   const guideBRef = useRef<HTMLDivElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
   const chipRef = useRef<HTMLDivElement>(null)
+  const [enter] = useState(() => motionOn())
   const [colW, setColW] = useState(300)
   const place = geom ? placeOverlay(geom, date) : { left: 8, top: 52, height: Math.round(window.innerHeight * 0.85) }
 
@@ -75,7 +77,12 @@ export function MonthOverlay({ date, geom }: { date: DateStr; geom: MonthGeom | 
   }, [date, marks.length])
 
   return createPortal(
-    <div ref={rootRef} id="b11-overlay" className={styles.overlay} style={{ left: place.left, top: place.top, height: place.height }}>
+    <div
+      ref={rootRef}
+      id="b11-overlay"
+      className={enter ? `${styles.overlay} ${styles.in}` : styles.overlay}
+      style={{ left: place.left, top: place.top, height: place.height }}
+    >
       <div className={styles.head}>
         <span className={styles.title}>{formatOverlayTitle(date)}</span>
         <button type="button" className={styles.close} onClick={() => closeMonth()}>
