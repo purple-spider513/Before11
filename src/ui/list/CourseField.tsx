@@ -1,9 +1,10 @@
-import { useImperativeHandle, useMemo, useRef, useState, type KeyboardEvent, type Ref } from 'react'
+import { useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type Ref } from 'react'
 import { matchingCourses } from '../../model/list.ts'
 import { swatch } from '../../model/palette.ts'
 import type { Course } from '../../model/types.ts'
 import { findCourseByName, trimName } from '../../store/actions.ts'
 import { useStore } from '../../store/store.ts'
+import { motionOn, useMotion } from '../motion.ts'
 import styles from './CourseField.module.css'
 
 export type CourseResolve = { kind: 'course'; course: Course } | { kind: 'empty' }
@@ -30,8 +31,17 @@ export function CourseField({
   const list = useMemo(() => Object.values(courses), [courses])
   const matches = useMemo(() => matchingCourses(list, value), [list, value])
   const [open, setOpen] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const [hi, setHi] = useState(0)
+  const entered = useRef(false)
   const closeTimer = useRef<number | undefined>(undefined)
+  const motion = useMotion()
+
+  useLayoutEffect(() => {
+    if (motion.on || !leaving) return
+    setOpen(false)
+    setLeaving(false)
+  }, [motion.on, leaving])
 
   useImperativeHandle(handleRef, () => ({
     focus() {
@@ -47,8 +57,26 @@ export function CourseField({
     },
   }))
 
+  function show() {
+    window.clearTimeout(closeTimer.current)
+    if (!open || leaving) entered.current = motionOn()
+    setLeaving(false)
+    setOpen(true)
+    setHi(0)
+  }
+
+  function hide() {
+    if (!open) return
+    if (!motionOn()) {
+      setOpen(false)
+      setLeaving(false)
+      return
+    }
+    setLeaving(true)
+  }
+
   function onKey(e: KeyboardEvent<HTMLInputElement>) {
-    if (!open || matches.length === 0) return
+    if (!open || leaving || matches.length === 0) return
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       setHi((n) => (n + 1) % matches.length)
@@ -70,26 +98,30 @@ export function CourseField({
         placeholder="Course"
         aria-label="Course"
         role="combobox"
-        aria-expanded={open && matches.length > 0}
+        aria-expanded={open && !leaving && matches.length > 0}
         aria-autocomplete="list"
         value={value}
-        onFocus={() => {
-          window.clearTimeout(closeTimer.current)
-          setOpen(true)
-          setHi(0)
-        }}
+        onFocus={show}
         onBlur={() => {
-          closeTimer.current = window.setTimeout(() => setOpen(false), 0)
+          closeTimer.current = window.setTimeout(hide, 0)
         }}
         onChange={(e) => {
           onChange(e.target.value)
-          setOpen(true)
-          setHi(0)
+          show()
         }}
         onKeyDown={onKey}
       />
       {open && matches.length > 0 ? (
-        <div className={styles.menu} role="listbox" aria-label="Courses">
+        <div
+          className={leaving ? `${styles.menu} ${styles.leave}` : entered.current ? `${styles.menu} ${styles.rise}` : styles.menu}
+          role="listbox"
+          aria-label="Courses"
+          onAnimationEnd={(event) => {
+            if (event.target !== event.currentTarget || !leaving) return
+            setOpen(false)
+            setLeaving(false)
+          }}
+        >
           {matches.map((course, index) => (
             <button
               key={course.id}
@@ -101,7 +133,7 @@ export function CourseField({
               onClick={() => {
                 onChange(course.name)
                 setHi(index)
-                setOpen(false)
+                hide()
               }}
             >
               <i style={{ background: swatch(course.color).fill }} />
