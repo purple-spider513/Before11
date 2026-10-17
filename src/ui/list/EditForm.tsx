@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { motionOn } from '../motion.ts'
 import { workKindLabel } from '../../model/list.ts'
 import { courseSwatches, swatch } from '../../model/palette.ts'
 import { courseById, WORK_KINDS, type Course, type Importance, type PaletteKey, type WorkKind } from '../../model/types.ts'
@@ -21,6 +22,7 @@ export function EditForm({ id }: { id: string }) {
   const item = useStore((s) => s.workItems[id])
   const course = useStore((s) => courseById(s.courses, item?.courseId))
   const courseCount = useStore((s) => Object.keys(s.courses).length)
+  const [rise] = useState(() => motionOn())
   const formRef = useRef<HTMLFormElement>(null)
   const courseRef = useRef<HTMLInputElement>(null)
   const dateRef = useRef<HTMLInputElement>(null)
@@ -108,7 +110,13 @@ export function EditForm({ id }: { id: string }) {
   }
 
   return (
-    <form ref={formRef} className={styles.form} onSubmit={onSubmit} onKeyDown={onKeyDown}>
+    <form
+      ref={formRef}
+      data-edit-form=""
+      className={rise ? `${styles.form} ${styles.rise}` : styles.form}
+      onSubmit={onSubmit}
+      onKeyDown={onKeyDown}
+    >
       <div className="seg kinds" role="group" aria-label="Kind">
         {WORK_KINDS.map((id) => (
           <button key={id} type="button" aria-pressed={kind === id} onClick={() => pickKind(id)}>
