@@ -46,4 +46,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   pointer-events: none;
+  transition: none;
+  animation: none;
 }

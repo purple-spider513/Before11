@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { tomorrowCount } from '../model/list.ts'
 import { useStore } from '../store/store.ts'
+import { ExitHost } from './ExitHost.tsx'
 import { Header } from './Header.tsx'
 import { SignIn } from './SignIn.tsx'
 import { Toast } from './Toast.tsx'
@@ -46,6 +47,7 @@ export function App() {
         <div className={styles.cal}>{user ? view === 'month' ? <MonthView /> : <TimeGrid /> : null}</div>
       </div>
       <Toast />
+      <ExitHost />
       <Tooltip />
       {popover?.kind === 'plain' ? (
         <PlainPopover sessionId={popover.sessionId} date={popover.date} isNew={popover.isNew} />
