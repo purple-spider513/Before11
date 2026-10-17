@@ -118,3 +118,58 @@ button {
 }
 
 .nums { font-variant-numeric: tabular-nums; }
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(var(--mx, 0px), var(--my, -4px), 0) scale(var(--ms, 1));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes leave {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(var(--mx, 0px), var(--my, -4px), 0) scale(var(--ms, 1));
+  }
+}
+
+@keyframes settle {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(2px) scale(0.98); }
+}
+
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+html[data-motion='on'] .b11-leave,
+html[data-motion='on'] .b11-pop,
+html[data-motion='on'] .b11-toast {
+  animation: leave 140ms var(--ease-exit) forwards;
+  pointer-events: none;
+}
+
+html[data-motion='on'] .b11-settle {
+  animation: settle 160ms var(--ease-enter) forwards;
+  pointer-events: none;
+  transform-origin: 18px 50%;
+}
+
+html[data-motion='on'] .b11-fade-out {
+  animation: fade-out 140ms var(--ease-exit) forwards;
+  pointer-events: none;
+}
