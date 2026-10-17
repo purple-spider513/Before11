@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
+import { motionOn, placeToward } from '../motion.ts'
 import { formatRange } from '../../model/minutes.ts'
 import { swatch } from '../../model/palette.ts'
 import { courseById } from '../../model/types.ts'
@@ -15,6 +16,7 @@ export function rememberAnchor(el: HTMLElement): void {
 export function OverflowPopover({ date, ids }: { date: string; ids: string[] }) {
   const sessions = useStore((s) => s.sessions)
   const rootRef = useRef<HTMLDivElement>(null)
+  const [rise] = useState(() => motionOn())
   const [pos, setPos] = useState({ left: 8, top: 52 })
 
   useLayoutEffect(() => {
@@ -37,12 +39,20 @@ export function OverflowPopover({ date, ids }: { date: string; ids: string[] }) 
       top = Math.min(Math.max(52, top), Math.max(52, window.innerHeight - 8 - height))
       left = Math.min(Math.max(8, left), Math.max(8, window.innerWidth - 8 - width))
       setPos({ left, top })
+      placeToward(pop, rect ?? null, left, width)
     }
     return () => window.removeEventListener('pointerdown', onDown)
   }, [date, ids])
 
   return (
-    <div ref={rootRef} className={styles.pop} style={{ left: pos.left, top: pos.top }} role="dialog" aria-label="Also here">
+    <div
+      ref={rootRef}
+      className={rise ? `${styles.pop} ${styles.rise}` : styles.pop}
+      style={{ left: pos.left, top: pos.top }}
+      role="dialog"
+      aria-label="Also here"
+      data-float-pop=""
+    >
       {ids.map((id) => {
         const session = sessions[id]
         if (!session) return null
