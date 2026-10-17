@@ -1,6 +1,8 @@
 import { StrictMode, useSyncExternalStore } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/global.css'
+import { installExitWatcher } from './ui/depart.ts'
+import { startMotion } from './ui/motion.ts'
 import { Probe } from './probe/Probe.tsx'
 import { bootStore } from './store/boot.ts'
 import { startClock } from './store/clock.ts'
@@ -9,6 +11,8 @@ import { onUser } from './supabase/auth.ts'
 import { startSync } from './supabase/listen.ts'
 import { App } from './ui/App.tsx'
 
+startMotion()
+installExitWatcher()
 bootStore()
 startClock()
 
