@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
+import { motionOn } from '../motion.ts'
 import { addDays } from '../../model/dates.ts'
 import { workKindLabel } from '../../model/list.ts'
 import { WORK_KINDS, type Course, type Importance, type WorkKind } from '../../model/types.ts'
@@ -22,6 +23,7 @@ export function AddForm() {
   const [estimate, setEstimate] = useState('')
   const [importance, setImportance] = useState<Importance | null>(null)
   const [hint, setHint] = useState<'course' | 'title' | 'date' | null>(null)
+  const [rise] = useState(() => motionOn())
   const courseRef = useRef<HTMLInputElement>(null)
   const titleRef = useRef<HTMLInputElement>(null)
   const dateRef = useRef<HTMLInputElement>(null)
@@ -112,7 +114,8 @@ export function AddForm() {
   return (
     <form
       ref={formRef}
-      className={styles.form}
+      data-add-form=""
+      className={rise ? `${styles.form} ${styles.rise}` : styles.form}
       role="dialog"
       aria-label="Add homework, exam, or task"
       onSubmit={onSubmit}
