@@ -3,6 +3,7 @@ import type { View } from '../model/types.ts'
 const DEVICE = 'b11.deviceId'
 const VIEW = 'b11.view'
 const COLLAPSED = 'b11.listCollapsed'
+const MOTION = 'b11.motion'
 const LAST_COURSE = 'b11.lastCourseId'
 
 const VIEWS: readonly View[] = ['day', '3day', 'week', 'month']
@@ -53,6 +54,14 @@ export function loadListCollapsed(): boolean {
 
 export function saveListCollapsed(collapsed: boolean): void {
   set(COLLAPSED, collapsed ? '1' : '0')
+}
+
+export function loadMotion(): boolean {
+  return get(MOTION) === '1'
+}
+
+export function saveMotion(on: boolean): void {
+  set(MOTION, on ? '1' : '0')
 }
 
 export function loadLastCourseId(): string | null {
